@@ -19,10 +19,11 @@
 #define DROMOZOA_COMMON_HPP
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include <jpeglib.h>
 
-// #include <dromozoa/bind.hpp>
+#include <dromozoa/bind.hpp>
 
 namespace dromozoa {
 }
