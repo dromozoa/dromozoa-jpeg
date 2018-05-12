@@ -21,6 +21,7 @@ LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -ljpeg -ldl
 
 OBJS = \
+	decompressor_handle.o \
 	module.o
 TARGET = jpeg.so
 

@@ -15,28 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-jpeg.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_COMMON_HPP
-#define DROMOZOA_COMMON_HPP
-
-#include <stddef.h>
-#include <stdio.h>
-
-#include <jpeglib.h>
-
-#include <dromozoa/bind.hpp>
+#include "common.hpp"
 
 namespace dromozoa {
-  class decompressor_handle {
-  public:
-    explicit decompressor_handle();
-    ~decompressor_handle();
-  private:
-    jpeg_decompress_struct cinfo_;
-    jpeg_error_mgr err_;
-    jpeg_source_mgr src_;
-    decompressor_handle(const decompressor_handle&);
-    decompressor_handle& operator=(const decompressor_handle&);
-  };
-}
+  decompressor_handle::decompressor_handle() : cinfo_(), err_(), src_() {
+    cinfo_.err = jpeg_std_error(&err_);
+    jpeg_create_decompress(&cinfo_);
+  }
 
-#endif
+  decompressor_handle::~decompressor_handle() {
+    jpeg_destroy_decompress(&cinfo_);
+  }
+}
