@@ -20,6 +20,17 @@ local function escape(source)
   return (source:gsub("[&<>]", escape_table))
 end
 
+local function skip_empty_lines(lines, i)
+  while true do
+    local line = lines[i]
+    if line and line:find "^%s*$" then
+      i = i - 1
+    else
+      return i
+    end
+  end
+end
+
 local function write_manual_html(lines, sections, section_index, subsection_index)
   local section = sections[section_index]
   local subsection = section[subsection_index]
@@ -58,7 +69,7 @@ local function write_manual_html(lines, sections, section_index, subsection_inde
 
 <pre>]]):format(escape(section.title), escape(subsection.title), escape(section.title), escape(subsection.title)))
 
-  for i = subsection.i + 2, subsection.j do
+  for i = subsection.i + 2, skip_empty_lines(lines, subsection.j) do
     local line = escape(lines[i])
     out:write(line, "\n")
   end
@@ -146,7 +157,7 @@ out:write [[
 
 <pre>]]
 
-for i = 1, subsection.i - 1 do
+for i = 1, skip_empty_lines(lines, subsection.i - 1) do
   local line = escape(lines[i])
   out:write(line, "\n")
 end
@@ -159,7 +170,7 @@ out:write(([[</pre>
 
 local j = 0
 
-for i = subsection.i, subsection.j do
+for i = subsection.i, skip_empty_lines(lines, subsection.j) do
   local line = escape(lines[i])
   if line:find "^\t" then
     j = j + 1
