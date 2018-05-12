@@ -39,7 +39,7 @@ tradeoffs, in which faster decompression may be obtained at the price of
 a poorer-quality image.  The defaults select the highest quality (slowest)
 processing.
 
-The following fields in the JPEG object are set by jpeg_read_header() and
+The following fields in the JPEG object are set by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() and
 may be useful to the application in choosing decompression parameters:
 
 JDIMENSION image_width			Width and height of image
@@ -65,7 +65,7 @@ The decompression parameters that determine the basic properties of the
 returned image are:
 
 J_COLOR_SPACE out_color_space
-	Output color space.  jpeg_read_header() sets an appropriate default
+	Output color space.  <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() sets an appropriate default
 	based on jpeg_color_space; typically it will be RGB or grayscale.
 	The application can change this field to request output in a different
 	colorspace.  For example, set it to JCS_GRAYSCALE to get grayscale
@@ -81,7 +81,7 @@ unsigned int scale_num, scale_denom
 	N is the source DCT size, which is 8 for baseline JPEG.  (The library
 	design allows for arbitrary scaling ratios but this is not likely
 	to be implemented any time soon.)  The values are initialized by
-	jpeg_read_header() with the source DCT size.  For baseline JPEG
+	<a href="jpeglib.h.html#L1039">jpeg_read_header</a>() with the source DCT size.  For baseline JPEG
 	this is 8/8.  If you change only the scale_num value while leaving
 	the other unchanged, then this specifies the DCT scaled size to be
 	applied on the given input.  For baseline JPEG this is equivalent
@@ -117,9 +117,9 @@ J_DITHER_MODE dither_mode
 	an external color map, you'll get F-S dithering.)
 
 When quantize_colors is TRUE, the target color map is described by the next
-two fields.  colormap is set to NULL by jpeg_read_header().  The application
+two fields.  colormap is set to NULL by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>().  The application
 can supply a color map by setting colormap non-NULL and setting
-actual_number_of_colors to the map size.  Otherwise, jpeg_start_decompress()
+actual_number_of_colors to the map size.  Otherwise, <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>()
 selects a suitable color map and sets these two fields itself.
 [Implementation restriction: at present, an externally supplied colormap is
 only accepted for 3-component output color spaces.]
@@ -128,7 +128,7 @@ JSAMPARRAY colormap
 	The color map, represented as a 2-D pixel array of out_color_components
 	rows and actual_number_of_colors columns.  Ignored if not quantizing.
 	CAUTION: if the JPEG library creates its own colormap, the storage
-	pointed to by this field is released by jpeg_finish_decompress().
+	pointed to by this field is released by <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>().
 	Copy the colormap somewhere else first, if you want to save it.
 
 int actual_number_of_colors
@@ -166,12 +166,12 @@ boolean enable_2pass_quant
 
 The output image dimensions are given by the following fields.  These are
 computed from the source image dimensions and the decompression parameters
-by jpeg_start_decompress().  You can also call jpeg_calc_output_dimensions()
+by <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().  You can also call <a href="jpeglib.h.html#L1080">jpeg_calc_output_dimensions</a>()
 to obtain the values that will result from the current parameter settings.
 This can be useful if you are trying to pick a scaling ratio that will get
 close to a desired target size.  It's also important if you are using the
 JPEG library's memory manager to allocate output buffer space, because you
-are supposed to request such buffers *before* jpeg_start_decompress().
+are supposed to request such buffers *before* <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().
 
 JDIMENSION output_width		Actual dimensions of output image.
 JDIMENSION output_height
@@ -184,7 +184,7 @@ index per pixel.  Otherwise it equals out_color_components.  The output arrays
 are required to be output_width * output_components JSAMPLEs wide.
 
 rec_outbuf_height is the recommended minimum height (in scanlines) of the
-buffer passed to jpeg_read_scanlines().  If the buffer is smaller, the
+buffer passed to <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>().  If the buffer is smaller, the
 library will still work, but time will be wasted due to unnecessary data
 copying.  In high-quality modes, rec_outbuf_height is always 1, but some
 faster, lower-quality modes set it to larger values (typically 2 to 4).

@@ -32,8 +32,8 @@ Some applications may need to regain control from the JPEG library every so
 often.  The typical use of this feature is to produce a percent-done bar or
 other progress display.  (For a simple example, see cjpeg.c or djpeg.c.)
 Although you do get control back frequently during the data-transferring pass
-(the jpeg_read_scanlines or jpeg_write_scanlines loop), any additional passes
-will occur inside jpeg_finish_compress or jpeg_start_decompress; those
+(the <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a> or <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a> loop), any additional passes
+will occur inside <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a> or <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>; those
 routines may take a long time to execute, and you don't get control back
 until they are done.
 
@@ -43,8 +43,8 @@ so we don't recommend you use it for mouse tracking or anything like that.
 At present, a call will occur once per MCU row, scanline, or sample row
 group, whichever unit is convenient for the current processing mode; so the
 wider the image, the longer the time between calls.  During the data
-transferring pass, only one call occurs per call of jpeg_read_scanlines or
-jpeg_write_scanlines, so don't pass a large number of scanlines at once if
+transferring pass, only one call occurs per call of <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a> or
+<a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>, so don't pass a large number of scanlines at once if
 you want fine resolution in the progress count.  (If you really need to use
 the callback mechanism for time-critical tasks like mouse tracking, you could
 insert additional calls inside some of the library's inner loops.)
@@ -84,7 +84,7 @@ When using the decompressor's buffered-image mode, the progress monitor work
 estimate is likely to be completely unhelpful, because the library has no way
 to know how many output passes will be demanded of it.  Currently, the library
 sets total_passes based on the assumption that there will be one more output
-pass if the input file end hasn't yet been read (jpeg_input_complete() isn't
+pass if the input file end hasn't yet been read (<a href="jpeglib.h.html#L1068">jpeg_input_complete</a>() isn't
 TRUE), but no more output passes if the file end has been reached when the
 output pass is started.  This means that total_passes will rise as additional
 output passes are requested.  If you have a way of determining the input file

@@ -67,17 +67,17 @@ Progressive compression:
 To create a progressive JPEG file (or a multiple-scan sequential JPEG file),
 set the scan_info cinfo field to point to an array of scan descriptors, and
 perform compression as usual.  Instead of constructing your own scan list,
-you can call the jpeg_simple_progression() helper routine to create a
+you can call the <a href="jpeglib.h.html#L1003">jpeg_simple_progression</a>() helper routine to create a
 recommended progression sequence; this method should be used by all
 applications that don't want to get involved in the nitty-gritty of
 progressive scan sequence design.  (If you want to provide user control of
 scan sequences, you may wish to borrow the scan script reading code found
 in rdswitch.c, so that you can read scan script files just like cjpeg's.)
 When scan_info is not NULL, the compression library will store DCT'd data
-into a buffer array as jpeg_write_scanlines() is called, and will emit all
-the requested scans during jpeg_finish_compress().  This implies that
+into a buffer array as <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>() is called, and will emit all
+the requested scans during <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>().  This implies that
 multiple-scan output cannot be created with a suspending data destination
-manager, since jpeg_finish_compress() does not support suspension.  We
+manager, since <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>() does not support suspension.  We
 should also note that the compressor currently forces Huffman optimization
 mode when creating a progressive JPEG file, because the default Huffman
 tables are unsuitable for progressive files.
@@ -85,12 +85,12 @@ tables are unsuitable for progressive files.
 Progressive decompression:
 
 When buffered-image mode is not used, the decoder library will read all of
-a multi-scan file during jpeg_start_decompress(), so that it can provide a
+a multi-scan file during <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(), so that it can provide a
 final decoded image.  (Here "multi-scan" means either progressive or
 multi-scan sequential.)  This makes multi-scan files transparent to the
 decoding application.  However, existing applications that used suspending
 input with version 5 of the IJG library will need to be modified to check
-for a suspension return from jpeg_start_decompress().
+for a suspension return from <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().
 
 To perform incremental display, an application must use the library's
 buffered-image mode.  This is described in the next section.

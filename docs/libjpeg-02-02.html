@@ -33,10 +33,10 @@ The rough outline of a JPEG compression operation is:
 	Allocate and initialize a JPEG compression object
 	Specify the destination for the compressed data (eg, a file)
 	Set parameters for compression, including image size &amp; colorspace
-	jpeg_start_compress(...);
+	<a href="jpeglib.h.html#L1010">jpeg_start_compress</a>(...);
 	while (scan lines remain to be written)
-		jpeg_write_scanlines(...);
-	jpeg_finish_compress(...);
+		<a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>(...);
+	<a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(...);
 	Release the JPEG compression object
 
 A JPEG compression object holds parameters and working state for the JPEG
@@ -47,7 +47,7 @@ same parameter settings for a sequence of images.  Re-use of a JPEG object
 also has important implications for processing abbreviated JPEG datastreams,
 as discussed later.
 
-The image data to be compressed is supplied to jpeg_write_scanlines() from
+The image data to be compressed is supplied to <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>() from
 in-memory buffers.  If the application is doing file-to-file compression,
 reading image data from the source file is the application's responsibility.
 The library emits compressed data by calling a "data destination manager",
@@ -58,12 +58,12 @@ Similarly, the rough outline of a JPEG decompression operation is:
 
 	Allocate and initialize a JPEG decompression object
 	Specify the source of the compressed data (eg, a file)
-	Call jpeg_read_header() to obtain image info
+	Call <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() to obtain image info
 	Set parameters for decompression
-	jpeg_start_decompress(...);
+	<a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(...);
 	while (scan lines remain to be read)
-		jpeg_read_scanlines(...);
-	jpeg_finish_decompress(...);
+		<a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(...);
+	<a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>(...);
 	Release the JPEG decompression object
 
 This is comparable to the compression outline except that reading the
@@ -75,15 +75,15 @@ output scaling ratio that will fit the image into the available screen size.
 The decompression library obtains compressed data by calling a data source
 manager, which typically will read the data from a file; but other behaviors
 can be obtained with a custom source manager.  Decompressed data is delivered
-into in-memory buffers passed to jpeg_read_scanlines().
+into in-memory buffers passed to <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>().
 
 It is possible to abort an incomplete compression or decompression operation
-by calling jpeg_abort(); or, if you do not need to retain the JPEG object,
-simply release it by calling jpeg_destroy().
+by calling <a href="jpeglib.h.html#L1111">jpeg_abort</a>(); or, if you do not need to retain the JPEG object,
+simply release it by calling <a href="jpeglib.h.html#L1112">jpeg_destroy</a>().
 
 JPEG compression and decompression objects are two separate struct types.
 However, they share some common fields, and certain routines such as
-jpeg_destroy() can work on either type of object.
+<a href="jpeglib.h.html#L1112">jpeg_destroy</a>() can work on either type of object.
 
 The JPEG library has no static variables: all state is in the compression
 or decompression object.  Therefore it is possible to process multiple

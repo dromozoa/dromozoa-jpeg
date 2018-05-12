@@ -39,7 +39,7 @@ library to use malloc() and free() for some reason).
 
 Some data is allocated "permanently" and will not be freed until the JPEG
 object is destroyed.  Most data is allocated "per image" and is freed by
-jpeg_finish_compress, jpeg_finish_decompress, or jpeg_abort.  You can call the
+<a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>, <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>, or <a href="jpeglib.h.html#L1111">jpeg_abort</a>.  You can call the
 memory manager yourself to allocate structures that will automatically be
 freed at these times.  Typical code for this is
   ptr = (*cinfo-&gt;mem-&gt;alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE, size);
@@ -68,7 +68,7 @@ Your application can set this limit by setting cinfo-&gt;mem-&gt;max_memory_to_u
 after creating the JPEG object.  (Of course, there is still a minimum size for
 the buffers, so the max-memory setting is effective only if it is bigger than
 the minimum space needed.)  If you allocate any large structures yourself, you
-must allocate them before jpeg_start_compress() or jpeg_start_decompress() in
+must allocate them before <a href="jpeglib.h.html#L1010">jpeg_start_compress</a>() or <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() in
 order to have them counted against the max memory limit.  Also keep in mind
 that space allocated with alloc_small() is ignored, on the assumption that
 it's too small to be worth worrying about; so a reasonable safety margin
@@ -80,8 +80,8 @@ files get deleted.  (This is especially crucial with jmemdos.c, where the
 "temporary files" may be extended-memory segments; if they are not freed,
 DOS will require a reboot to recover the memory.)  Thus, with these memory
 managers, it's a good idea to provide a signal handler that will trap any
-early exit from your program.  The handler should call either jpeg_abort()
-or jpeg_destroy() for any active JPEG objects.  A handler is not needed with
+early exit from your program.  The handler should call either <a href="jpeglib.h.html#L1111">jpeg_abort</a>()
+or <a href="jpeglib.h.html#L1112">jpeg_destroy</a>() for any active JPEG objects.  A handler is not needed with
 jmemnobs.c, and shouldn't be necessary with jmemansi.c or jmemmac.c either,
 since the C library is supposed to take care of deleting files made with
 tmpfile().

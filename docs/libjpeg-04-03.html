@@ -45,9 +45,9 @@ additional color spaces and perform appropriate conversions.
 
 For compression, the source data's color space is specified by field
 in_color_space.  This is transformed to the JPEG file's color space given
-by jpeg_color_space.  jpeg_set_defaults() chooses a reasonable JPEG color
+by jpeg_color_space.  <a href="jpeglib.h.html#L986">jpeg_set_defaults</a>() chooses a reasonable JPEG color
 space depending on in_color_space, but you can override this by calling
-jpeg_set_colorspace().  Of course you must select a supported transformation.
+<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>().  Of course you must select a supported transformation.
 jccolor.c currently supports the following transformations:
 	RGB =&gt; YCbCr
 	RGB =&gt; GRAYSCALE
@@ -63,7 +63,7 @@ The file interchange format standards (JFIF and Adobe) specify APPn markers
 that indicate the color space of the JPEG file.  It is important to ensure
 that these are written correctly, or omitted if the JPEG file's color space
 is not one of the ones supported by the interchange standards.
-jpeg_set_colorspace() will set the compression parameters to include or omit
+<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>() will set the compression parameters to include or omit
 the APPn markers properly, so long as it is told the truth about the JPEG
 color space.  For example, if you are writing some random 3-component color
 space without conversion, don't try to fake out the library by setting
@@ -74,14 +74,14 @@ the colorspace --- see "Special markers", below.
 When told that the color space is UNKNOWN, the library will default to using
 luminance-quality compression parameters for all color components.  You may
 well want to change these parameters.  See the source code for
-jpeg_set_colorspace(), in jcparam.c, for details.
+<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>(), in jcparam.c, for details.
 
 For decompression, the JPEG file's color space is given in jpeg_color_space,
 and this is transformed to the output color space out_color_space.
-jpeg_read_header's setting of jpeg_color_space can be relied on if the file
+<a href="jpeglib.h.html#L1039">jpeg_read_header</a>'s setting of jpeg_color_space can be relied on if the file
 conforms to JFIF or Adobe conventions, but otherwise it is no better than a
 guess.  If you know the JPEG file's color space for certain, you can override
-jpeg_read_header's guess by setting jpeg_color_space.  jpeg_read_header also
+<a href="jpeglib.h.html#L1039">jpeg_read_header</a>'s guess by setting jpeg_color_space.  <a href="jpeglib.h.html#L1039">jpeg_read_header</a> also
 selects a default output color space based on (its guess of) jpeg_color_space;
 set out_color_space to override this.  Again, you must select a supported
 transformation.  jdcolor.c currently supports

@@ -31,7 +31,7 @@ local function skip_empty_lines(lines, i)
   end
 end
 
-local function write_manual_html(lines, sections, section_index, subsection_index)
+local function write_manual_html(lines, sections, section_index, subsection_index, symbol_table)
   local section = sections[section_index]
   local subsection = section[subsection_index]
 
@@ -71,6 +71,12 @@ local function write_manual_html(lines, sections, section_index, subsection_inde
 
   for i = subsection.i + 2, skip_empty_lines(lines, subsection.j) do
     local line = escape(lines[i])
+    line = line:gsub("jpeg_[%w_]+", function (symbol)
+      local number = symbol_table[symbol]
+      if number then
+        return ([[<a href="jpeglib.h.html#L%d">%s</a>]]):format(number, symbol)
+      end
+    end)
     out:write(line, "\n")
   end
 
@@ -83,6 +89,92 @@ local function write_manual_html(lines, sections, section_index, subsection_inde
 
   return filename
 end
+
+local out = assert(io.open("docs/jpeglib.h.html", "w"))
+out:write [[
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>jpeglib.h</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+pre.prettyprint > ol.linenums {
+  padding-left: 4em;
+}
+pre.prettyprint > ol.linenums > li {
+  color: #C6C6C6;
+  list-style-type: decimal;
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>jpeglib.h</h1>
+
+<pre class="prettyprint lang-c linenums">
+]]
+
+local symbol_table = {}
+
+local i = 0
+for line in io.lines "docs/jpeglib.h" do
+  i = i + 1
+  out:write(escape(line), "\n")
+  local symbol = line:match "EXTERN%(.-%) (jpeg_[%w_]+)"
+  if symbol then
+    symbol_table[symbol] = i
+  end
+
+  -- local symbol = line:match "PNG_[%u_]*EXPORT%(%d+, [^,]+, (png_[%w_]+),"
+  -- if symbol then
+  --   symbol_table[symbol] = i
+  -- end
+  -- local symbol = line:match "# *define (PNG_[%w_]+)"
+  -- if symbol then
+  --   symbol_table[symbol] = i
+  -- end
+end
+
+out:write [[
+</pre>
+</div>
+<script>
+(function (root) {
+  if (!root.exports) {
+    root.exports = {};
+  }
+  root.exports["dromozoa-jpeg"] = function () {
+    let document = root.document;
+    let items = document.querySelectorAll("pre.prettyprint > ol.linenums > li");
+    for (let i = 0; i < items.length; ++i) {
+      items[i].setAttribute("id", "L" + (i + 1));
+    }
+    if (document.location.hash) {
+      document.location.href = document.location.hash;
+    }
+  };
+}(this));
+</script>
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?callback=dromozoa-jpeg"></script>
+</body>
+</html>
+]]
+out:close()
 
 local lines = {}
 for line in io.lines "docs/libjpeg.txt" do
@@ -120,7 +212,7 @@ local filenames = {}
 for i = 2, #sections do
   local section = sections[i]
   for j = 1, #section do
-    filenames[#filenames + 1] = write_manual_html(lines, sections, i, j)
+    filenames[#filenames + 1] = write_manual_html(lines, sections, i, j, symbol_table)
   end
 end
 

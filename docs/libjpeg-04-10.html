@@ -62,20 +62,20 @@ Adobe markers and will set the JPEG colorspace properly when one is found.
 
 
 You can write special markers immediately following the datastream header by
-calling jpeg_write_marker() after jpeg_start_compress() and before the first
-call to jpeg_write_scanlines().  When you do this, the markers appear after
+calling <a href="jpeglib.h.html#L1026">jpeg_write_marker</a>() after <a href="jpeglib.h.html#L1010">jpeg_start_compress</a>() and before the first
+call to <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>().  When you do this, the markers appear after
 the SOI and the JFIF APP0 and Adobe APP14 markers (if written), but before
 all else.  Specify the marker type parameter as "JPEG_COM" for COM or
-"JPEG_APP0 + n" for APPn.  (Actually, jpeg_write_marker will let you write
+"JPEG_APP0 + n" for APPn.  (Actually, <a href="jpeglib.h.html#L1026">jpeg_write_marker</a> will let you write
 any marker type, but we don't recommend writing any other kinds of marker.)
 For example, to write a user comment string pointed to by comment_text:
-	jpeg_write_marker(cinfo, JPEG_COM, comment_text, strlen(comment_text));
+	<a href="jpeglib.h.html#L1026">jpeg_write_marker</a>(cinfo, JPEG_COM, comment_text, strlen(comment_text));
 
 If it's not convenient to store all the marker data in memory at once,
-you can instead call jpeg_write_m_header() followed by multiple calls to
-jpeg_write_m_byte().  If you do it this way, it's your responsibility to
-call jpeg_write_m_byte() exactly the number of times given in the length
-parameter to jpeg_write_m_header().  (This method lets you empty the
+you can instead call <a href="jpeglib.h.html#L1030">jpeg_write_m_header</a>() followed by multiple calls to
+<a href="jpeglib.h.html#L1032">jpeg_write_m_byte</a>().  If you do it this way, it's your responsibility to
+call <a href="jpeglib.h.html#L1032">jpeg_write_m_byte</a>() exactly the number of times given in the length
+parameter to <a href="jpeglib.h.html#L1030">jpeg_write_m_header</a>().  (This method lets you empty the
 output buffer partway through a marker, which might be important when
 using a suspending data destination module.  In any case, if you are using
 a suspending destination, you should flush its buffer after inserting
@@ -106,16 +106,16 @@ input buffer).  However, the second method conserves memory since the marker
 data need not be kept around after it's been processed.
 
 For either method, you'd normally set up marker handling after creating a
-decompression object and before calling jpeg_read_header(), because the
+decompression object and before calling <a href="jpeglib.h.html#L1039">jpeg_read_header</a>(), because the
 markers of interest will typically be near the head of the file and so will
-be scanned by jpeg_read_header.  Once you've established a marker handling
+be scanned by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>.  Once you've established a marker handling
 method, it will be used for the life of that decompression object
 (potentially many datastreams), unless you change it.  Marker handling is
 determined separately for COM markers and for each APPn marker code.
 
 
 To save the contents of special markers in memory, call
-	jpeg_save_markers(cinfo, marker_code, length_limit)
+	<a href="jpeglib.h.html#L1083">jpeg_save_markers</a>(cinfo, marker_code, length_limit)
 where marker_code is the marker type to save, JPEG_COM or JPEG_APP0+n.
 (To arrange to save all the special marker types, you need to call this
 routine 17 times, for COM and APP0-APP15.)  If the incoming marker is longer
@@ -126,7 +126,7 @@ data, set length_limit to 0xFFFF; that is enough since marker lengths are only
 16 bits.  As a special case, setting length_limit to 0 prevents that marker
 type from being saved at all.  (That is the default behavior, in fact.)
 
-After jpeg_read_header() completes, you can examine the special markers by
+After <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() completes, you can examine the special markers by
 following the cinfo-&gt;marker_list pointer chain.  All the special markers in
 the file appear in this list, in order of their occurrence in the file (but
 omitting any markers of types you didn't ask for).  Both the original data
@@ -137,16 +137,16 @@ within the JPEG file includes it.  (Hence the maximum data length is really
 only 65533.)
 
 It is possible that additional special markers appear in the file beyond the
-SOS marker at which jpeg_read_header stops; if so, the marker list will be
+SOS marker at which <a href="jpeglib.h.html#L1039">jpeg_read_header</a> stops; if so, the marker list will be
 extended during reading of the rest of the file.  This is not expected to be
 common, however.  If you are short on memory you may want to reset the length
-limit to zero for all marker types after finishing jpeg_read_header, to
+limit to zero for all marker types after finishing <a href="jpeglib.h.html#L1039">jpeg_read_header</a>, to
 ensure that the max_memory_to_use setting cannot be exceeded due to addition
 of later markers.
 
-The marker list remains stored until you call jpeg_finish_decompress or
-jpeg_abort, at which point the memory is freed and the list is set to empty.
-(jpeg_destroy also releases the storage, of course.)
+The marker list remains stored until you call <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a> or
+<a href="jpeglib.h.html#L1111">jpeg_abort</a>, at which point the memory is freed and the list is set to empty.
+(<a href="jpeglib.h.html#L1112">jpeg_destroy</a> also releases the storage, of course.)
 
 Note that the library is internally interested in APP0 and APP14 markers;
 if you try to set a small nonzero length limit on these types, the library
@@ -158,7 +158,7 @@ effective length limit is exactly what you set it to be.
 
 
 If you want to supply your own marker-reading routine, you do it by calling
-jpeg_set_marker_processor().  A marker processor routine must have the
+<a href="jpeglib.h.html#L1088">jpeg_set_marker_processor</a>().  A marker processor routine must have the
 signature
 	boolean jpeg_marker_parser_method (j_decompress_ptr cinfo)
 Although the marker code is not explicitly passed, the routine can find it
@@ -174,15 +174,15 @@ If you override the default APP0 or APP14 processors, it is up to you to
 recognize JFIF and Adobe markers if you want colorspace recognition to occur
 properly.  We recommend copying and extending the default processors if you
 want to do that.  (A better idea is to save these marker types for later
-examination by calling jpeg_save_markers(); that method doesn't interfere
+examination by calling <a href="jpeglib.h.html#L1083">jpeg_save_markers</a>(); that method doesn't interfere
 with the library's own processing of these markers.)
 
-jpeg_set_marker_processor() and jpeg_save_markers() are mutually exclusive
+<a href="jpeglib.h.html#L1088">jpeg_set_marker_processor</a>() and <a href="jpeglib.h.html#L1083">jpeg_save_markers</a>() are mutually exclusive
 --- if you call one it overrides any previous call to the other, for the
 particular marker type specified.
 
 A simple example of an external COM processor can be found in djpeg.c.
-Also, see jpegtran.c for an example of using jpeg_save_markers.
+Also, see jpegtran.c for an example of using <a href="jpeglib.h.html#L1083">jpeg_save_markers</a>.
 </pre>
 </div>
 </body>

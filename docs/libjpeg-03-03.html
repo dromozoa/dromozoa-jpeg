@@ -41,7 +41,7 @@ Typical code:
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	...
-	cinfo.err = jpeg_std_error(&amp;jerr);
+	cinfo.err = <a href="jpeglib.h.html#L948">jpeg_std_error</a>(&amp;jerr);
 	jpeg_create_decompress(&amp;cinfo);
 
 (Both here and in the IJG code, we usually use variable name "cinfo" for
@@ -64,7 +64,7 @@ beforehand.  Typical code for this step looks like:
 	    fprintf(stderr, "can't open %s\n", filename);
 	    exit(1);
 	}
-	jpeg_stdio_src(&amp;cinfo, infile);
+	<a href="jpeglib.h.html#L975">jpeg_stdio_src</a>(&amp;cinfo, infile);
 
 where the last line invokes the standard source module.
 
@@ -75,19 +75,19 @@ a "b" option to fopen (as shown above), or use setmode() or another routine to
 put the stdio stream in binary mode.  See cjpeg.c and djpeg.c for code that
 has been found to work on many systems.
 
-You may not change the data source between calling jpeg_read_header() and
-jpeg_finish_decompress().  If you wish to read a series of JPEG images from
-a single source file, you should repeat the jpeg_read_header() to
-jpeg_finish_decompress() sequence without reinitializing either the JPEG
+You may not change the data source between calling <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() and
+<a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>().  If you wish to read a series of JPEG images from
+a single source file, you should repeat the <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() to
+<a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>() sequence without reinitializing either the JPEG
 object or the data source module; this prevents buffered input data from
 being discarded.
 
 
-3. Call jpeg_read_header() to obtain image info.
+3. Call <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() to obtain image info.
 
 Typical code for this step is just
 
-	jpeg_read_header(&amp;cinfo, TRUE);
+	<a href="jpeglib.h.html#L1039">jpeg_read_header</a>(&amp;cinfo, TRUE);
 
 This will read the source datastream header markers, up to the beginning
 of the compressed data proper.  On return, the image dimensions and other
@@ -95,7 +95,7 @@ info have been stored in the JPEG object.  The application may wish to
 consult this information before selecting decompression parameters.
 
 More complex code is necessary if
-  * A suspending data source is used --- in that case jpeg_read_header()
+  * A suspending data source is used --- in that case <a href="jpeglib.h.html#L1039">jpeg_read_header</a>()
     may return before it has read all the header data.  See "I/O suspension",
     below.  The normal stdio source manager will NOT cause this to happen.
   * Abbreviated JPEG files are to be processed --- see the section on
@@ -104,14 +104,14 @@ More complex code is necessary if
 
 It is permissible to stop at this point if you just wanted to find out the
 image dimensions and other header info for a JPEG file.  In that case,
-call jpeg_destroy() when you are done with the JPEG object, or call
-jpeg_abort() to return it to an idle state before selecting a new data
+call <a href="jpeglib.h.html#L1112">jpeg_destroy</a>() when you are done with the JPEG object, or call
+<a href="jpeglib.h.html#L1111">jpeg_abort</a>() to return it to an idle state before selecting a new data
 source and reading another header.
 
 
 4. Set parameters for decompression.
 
-jpeg_read_header() sets appropriate default decompression parameters based on
+<a href="jpeglib.h.html#L1039">jpeg_read_header</a>() sets appropriate default decompression parameters based on
 the properties of the image (in particular, its colorspace).  However, you
 may well want to alter these defaults before beginning the decompression.
 For example, the default is to produce full color output from a color file.
@@ -121,27 +121,27 @@ selected.  "Decompression parameter selection", below, gives details.
 
 If the defaults are appropriate, nothing need be done at this step.
 
-Note that all default values are set by each call to jpeg_read_header().
+Note that all default values are set by each call to <a href="jpeglib.h.html#L1039">jpeg_read_header</a>().
 If you reuse a decompression object, you cannot expect your parameter
 settings to be preserved across cycles, as you can for compression.
 You must set desired parameter values each time.
 
 
-5. jpeg_start_decompress(...);
+5. <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(...);
 
-Once the parameter values are satisfactory, call jpeg_start_decompress() to
+Once the parameter values are satisfactory, call <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() to
 begin decompression.  This will initialize internal state, allocate working
 memory, and prepare for returning data.
 
 Typical code is just
 
-	jpeg_start_decompress(&amp;cinfo);
+	<a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(&amp;cinfo);
 
 If you have requested a multi-pass operating mode, such as 2-pass color
-quantization, jpeg_start_decompress() will do everything needed before data
-output can begin.  In this case jpeg_start_decompress() may take quite a while
+quantization, <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() will do everything needed before data
+output can begin.  In this case <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() may take quite a while
 to complete.  With a single-scan (non progressive) JPEG file and default
-decompression parameters, this will not happen; jpeg_start_decompress() will
+decompression parameters, this will not happen; <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() will
 return quickly.
 
 After this call, the final output image dimensions, including any requested
@@ -165,18 +165,18 @@ output buffer, and a total of output_height scanlines will be returned.
 
 Note: if you are using the JPEG library's internal memory manager to allocate
 data buffers (as djpeg does), then the manager's protocol requires that you
-request large buffers *before* calling jpeg_start_decompress().  This is a
+request large buffers *before* calling <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().  This is a
 little tricky since the output_XXX fields are not normally valid then.  You
-can make them valid by calling jpeg_calc_output_dimensions() after setting the
+can make them valid by calling <a href="jpeglib.h.html#L1080">jpeg_calc_output_dimensions</a>() after setting the
 relevant parameters (scaling, output color space, and quantization flag).
 
 
 6. while (scan lines remain to be read)
-	jpeg_read_scanlines(...);
+	<a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(...);
 
-Now you can read the decompressed image data by calling jpeg_read_scanlines()
+Now you can read the decompressed image data by calling <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>()
 one or more times.  At each call, you pass in the maximum number of scanlines
-to be read (ie, the height of your working buffer); jpeg_read_scanlines()
+to be read (ie, the height of your working buffer); <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>()
 will return up to that many lines.  The return value is the number of lines
 actually read.  The format of the returned data is discussed under "Data
 formats", above.  Don't forget that grayscale and color JPEGs will return
@@ -196,32 +196,32 @@ image_height field is the height of the original unscaled image.)
 The return value always equals the change in the value of output_scanline.
 
 If you don't use a suspending data source, it is safe to assume that
-jpeg_read_scanlines() reads at least one scanline per call, until the
+<a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>() reads at least one scanline per call, until the
 bottom of the image has been reached.
 
 If you use a buffer larger than one scanline, it is NOT safe to assume that
-jpeg_read_scanlines() fills it.  (The current implementation returns only a
+<a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>() fills it.  (The current implementation returns only a
 few scanlines per call, no matter how large a buffer you pass.)  So you must
-always provide a loop that calls jpeg_read_scanlines() repeatedly until the
+always provide a loop that calls <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>() repeatedly until the
 whole image has been read.
 
 
-7. jpeg_finish_decompress(...);
+7. <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>(...);
 
-After all the image data has been read, call jpeg_finish_decompress() to
+After all the image data has been read, call <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>() to
 complete the decompression cycle.  This causes working memory associated
 with the JPEG object to be released.
 
 Typical code:
 
-	jpeg_finish_decompress(&amp;cinfo);
+	<a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>(&amp;cinfo);
 
 If using the stdio source manager, don't forget to close the source stdio
 stream if necessary.
 
-It is an error to call jpeg_finish_decompress() before reading the correct
+It is an error to call <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>() before reading the correct
 total number of scanlines.  If you wish to abort decompression, call
-jpeg_abort() as discussed below.
+<a href="jpeglib.h.html#L1111">jpeg_abort</a>() as discussed below.
 
 After completing a decompression cycle, you may dispose of the JPEG object as
 discussed next, or you may use it to decompress another image.  In that case
@@ -232,19 +232,19 @@ manager, the next image will be read from the same source.
 8. Release the JPEG decompression object.
 
 When you are done with a JPEG decompression object, destroy it by calling
-jpeg_destroy_decompress() or jpeg_destroy().  The previous discussion of
+<a href="jpeglib.h.html#L970">jpeg_destroy_decompress</a>() or <a href="jpeglib.h.html#L1112">jpeg_destroy</a>().  The previous discussion of
 destroying compression objects applies here too.
 
 Typical code:
 
-	jpeg_destroy_decompress(&amp;cinfo);
+	<a href="jpeglib.h.html#L970">jpeg_destroy_decompress</a>(&amp;cinfo);
 
 
 9. Aborting.
 
-You can abort a decompression cycle by calling jpeg_destroy_decompress() or
-jpeg_destroy() if you don't need the JPEG object any more, or
-jpeg_abort_decompress() or jpeg_abort() if you want to reuse the object.
+You can abort a decompression cycle by calling <a href="jpeglib.h.html#L970">jpeg_destroy_decompress</a>() or
+<a href="jpeglib.h.html#L1112">jpeg_destroy</a>() if you don't need the JPEG object any more, or
+<a href="jpeglib.h.html#L1106">jpeg_abort_decompress</a>() or <a href="jpeglib.h.html#L1111">jpeg_abort</a>() if you want to reuse the object.
 The previous discussion of aborting compression cycles applies here too.
 </pre>
 </div>

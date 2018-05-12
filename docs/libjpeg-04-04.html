@@ -47,7 +47,7 @@ the error handling routines.  Three classes of messages are recognized:
 You may, if you wish, simply replace the entire JPEG error handling module
 (jerror.c) with your own code.  However, you can avoid code duplication by
 only replacing some of the routines depending on the behavior you need.
-This is accomplished by calling jpeg_std_error() as usual, but then overriding
+This is accomplished by calling <a href="jpeglib.h.html#L948">jpeg_std_error</a>() as usual, but then overriding
 some of the method pointers in the jpeg_error_mgr struct, as illustrated by
 example.c.
 
@@ -74,7 +74,7 @@ error_exit (j_common_ptr cinfo)
 	generally this routine will exit() or longjmp() somewhere.
 	Typically you would override this routine to get rid of the exit()
 	default behavior.  Note that if you continue processing, you should
-	clean up the JPEG object with jpeg_abort() or jpeg_destroy().
+	clean up the JPEG object with <a href="jpeglib.h.html#L1111">jpeg_abort</a>() or <a href="jpeglib.h.html#L1112">jpeg_destroy</a>().
 
 output_message (j_common_ptr cinfo)
 	Actual output of any JPEG message.  Override this to send messages

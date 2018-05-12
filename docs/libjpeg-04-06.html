@@ -55,10 +55,10 @@ Compression suspension:
 
 For compression suspension, use an empty_output_buffer() routine that returns
 FALSE; typically it will not do anything else.  This will cause the
-compressor to return to the caller of jpeg_write_scanlines(), with the return
+compressor to return to the caller of <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>(), with the return
 value indicating that not all the supplied scanlines have been accepted.
 The application must make more room in the output buffer, adjust the output
-buffer pointer/count appropriately, and then call jpeg_write_scanlines()
+buffer pointer/count appropriately, and then call <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>()
 again, pointing to the first unconsumed scanline.
 
 When forced to suspend, the compressor will backtrack to a convenient stopping
@@ -74,7 +74,7 @@ for efficiency; you don't want the compressor to suspend often.  (In fact, an
 overly small buffer could lead to infinite looping, if a single MCU required
 more data than would fit in the buffer.)  We recommend a buffer of at least
 several Kbytes.  You may want to insert explicit code to ensure that you don't
-call jpeg_write_scanlines() unless there is a reasonable amount of space in
+call <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>() unless there is a reasonable amount of space in
 the output buffer; in other words, flush the buffer before trying to compress
 more data.
 
@@ -86,16 +86,16 @@ markers at the beginning and end of the file.  This means that:
     this is not a problem as long as you start with an empty buffer.  However,
     this restriction might catch you if you insert large special markers, such
     as a JFIF thumbnail image, without flushing the buffer afterwards.
-  * When you call jpeg_finish_compress(), there must be enough space in the
+  * When you call <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(), there must be enough space in the
     output buffer to emit any buffered data and the final EOI marker.  In the
     current implementation, half a dozen bytes should suffice for this, but
     for safety's sake we recommend ensuring that at least 100 bytes are free
-    before calling jpeg_finish_compress().
+    before calling <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>().
 
-A more significant restriction is that jpeg_finish_compress() cannot suspend.
+A more significant restriction is that <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>() cannot suspend.
 This means you cannot use suspension with multi-pass operating modes, namely
 Huffman code optimization and multiple-scan output.  Those modes write the
-whole file during jpeg_finish_compress(), which will certainly result in
+whole file during <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(), which will certainly result in
 buffer overrun.  (Note that this restriction applies only to compression,
 not decompression.  The decompressor supports input suspension in all of its
 operating modes.)
@@ -106,13 +106,13 @@ For decompression suspension, use a fill_input_buffer() routine that simply
 returns FALSE (except perhaps during error recovery, as discussed below).
 This will cause the decompressor to return to its caller with an indication
 that suspension has occurred.  This can happen at four places:
-  * jpeg_read_header(): will return JPEG_SUSPENDED.
-  * jpeg_start_decompress(): will return FALSE, rather than its usual TRUE.
-  * jpeg_read_scanlines(): will return the number of scanlines already
+  * <a href="jpeglib.h.html#L1039">jpeg_read_header</a>(): will return JPEG_SUSPENDED.
+  * <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(): will return FALSE, rather than its usual TRUE.
+  * <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(): will return the number of scanlines already
 	completed (possibly 0).
-  * jpeg_finish_decompress(): will return FALSE, rather than its usual TRUE.
+  * <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>(): will return FALSE, rather than its usual TRUE.
 The surrounding application must recognize these cases, load more data into
-the input buffer, and repeat the call.  In the case of jpeg_read_scanlines(),
+the input buffer, and repeat the call.  In the case of <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(),
 increment the passed pointers past any scanlines successfully read.
 
 Just as with compression, the decompressor will typically backtrack to a
