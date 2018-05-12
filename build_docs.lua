@@ -71,7 +71,7 @@ local function write_manual_html(lines, sections, section_index, subsection_inde
 
   for i = subsection.i + 2, skip_empty_lines(lines, subsection.j) do
     local line = escape(lines[i])
-    line = line:gsub("jpeg_[%w_]+", function (symbol)
+    line = line:gsub("[Jj][%w_]+", function (symbol)
       local number = symbol_table[symbol]
       if number then
         return ([[<a href="jpeglib.h.html#L%d">%s</a>]]):format(number, symbol)
@@ -135,19 +135,26 @@ local i = 0
 for line in io.lines "docs/jpeglib.h" do
   i = i + 1
   out:write(escape(line), "\n")
-  local symbol = line:match "EXTERN%(.-%) (jpeg_[%w_]+)"
+  local symbol = line:match "^EXTERN%(.-%) (jpeg_[%w_]+)"
   if symbol then
+    assert(not symbol_table[symbol])
     symbol_table[symbol] = i
   end
-
-  -- local symbol = line:match "PNG_[%u_]*EXPORT%(%d+, [^,]+, (png_[%w_]+),"
-  -- if symbol then
-  --   symbol_table[symbol] = i
-  -- end
-  -- local symbol = line:match "# *define (PNG_[%w_]+)"
-  -- if symbol then
-  --   symbol_table[symbol] = i
-  -- end
+  local symbol = line:match "^typedef .- %*?([Jj][%w_]+);"
+  if symbol then
+    assert(not symbol_table[symbol])
+    symbol_table[symbol] = i;
+  end
+  local symbol = line:match "^} ([Jj][%w_]+);"
+  if symbol then
+    assert(not symbol_table[symbol])
+    symbol_table[symbol] = i;
+  end
+  local symbol = line:match "^struct (jpeg_[%w_]+)"
+  if symbol then
+    assert(not symbol_table[symbol])
+    symbol_table[symbol] = i;
+  end
 end
 
 out:write [[

@@ -132,8 +132,8 @@ allocate the table structs and fill in their contents directly.  For example,
 to load a fixed quantization table into table slot "n":
 
     if (cinfo.quant_tbl_ptrs[n] == NULL)
-      cinfo.quant_tbl_ptrs[n] = <a href="jpeglib.h.html#L1006">jpeg_alloc_quant_table</a>((j_common_ptr) &amp;cinfo);
-    quant_ptr = cinfo.quant_tbl_ptrs[n];	/* quant_ptr is JQUANT_TBL* */
+      cinfo.quant_tbl_ptrs[n] = <a href="jpeglib.h.html#L1006">jpeg_alloc_quant_table</a>((<a href="jpeglib.h.html#L284">j_common_ptr</a>) &amp;cinfo);
+    quant_ptr = cinfo.quant_tbl_ptrs[n];	/* quant_ptr is <a href="jpeglib.h.html#L104">JQUANT_TBL</a>* */
     for (i = 0; i &lt; 64; i++) {
       /* Qtable[] is desired quantization table, in natural array order */
       quant_ptr-&gt;quantval[i] = Qtable[i];
@@ -142,8 +142,8 @@ to load a fixed quantization table into table slot "n":
 Code to load a fixed Huffman table is typically (for AC table "n"):
 
     if (cinfo.ac_huff_tbl_ptrs[n] == NULL)
-      cinfo.ac_huff_tbl_ptrs[n] = <a href="jpeglib.h.html#L1007">jpeg_alloc_huff_table</a>((j_common_ptr) &amp;cinfo);
-    huff_ptr = cinfo.ac_huff_tbl_ptrs[n];	/* huff_ptr is JHUFF_TBL* */
+      cinfo.ac_huff_tbl_ptrs[n] = <a href="jpeglib.h.html#L1007">jpeg_alloc_huff_table</a>((<a href="jpeglib.h.html#L284">j_common_ptr</a>) &amp;cinfo);
+    huff_ptr = cinfo.ac_huff_tbl_ptrs[n];	/* huff_ptr is <a href="jpeglib.h.html#L120">JHUFF_TBL</a>* */
     for (i = 1; i &lt;= 16; i++) {
       /* counts[i] is number of Huffman codes of length i bits, i=1..16 */
       huff_ptr-&gt;bits[i] = counts[i];
@@ -154,7 +154,7 @@ Code to load a fixed Huffman table is typically (for AC table "n"):
     }
 
 (Note that trying to set cinfo.quant_tbl_ptrs[n] to point directly at a
-constant JQUANT_TBL object is not safe.  If the incoming file happened to
+constant <a href="jpeglib.h.html#L104">JQUANT_TBL</a> object is not safe.  If the incoming file happened to
 contain a quantization table definition, your master table would get
 overwritten!  Instead allocate a working table copy and copy the master table
 into it, as illustrated above.  Ditto for Huffman tables, of course.)

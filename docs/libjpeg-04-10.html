@@ -160,7 +160,7 @@ effective length limit is exactly what you set it to be.
 If you want to supply your own marker-reading routine, you do it by calling
 <a href="jpeglib.h.html#L1088">jpeg_set_marker_processor</a>().  A marker processor routine must have the
 signature
-	boolean jpeg_marker_parser_method (j_decompress_ptr cinfo)
+	boolean jpeg_marker_parser_method (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo)
 Although the marker code is not explicitly passed, the routine can find it
 in cinfo-&gt;unread_marker.  At the time of call, the marker proper has been
 read from the data source module.  The processor routine is responsible for

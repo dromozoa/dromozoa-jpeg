@@ -66,13 +66,13 @@ and total size in private fields not visible to the library.
 
 A data destination manager provides three methods:
 
-init_destination (j_compress_ptr cinfo)
+init_destination (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	Initialize destination.  This is called by <a href="jpeglib.h.html#L1010">jpeg_start_compress</a>()
 	before any data is actually written.  It must initialize
 	next_output_byte and free_in_buffer.  free_in_buffer must be
 	initialized to a positive value.
 
-empty_output_buffer (j_compress_ptr cinfo)
+empty_output_buffer (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	This is called whenever the buffer has filled (free_in_buffer
 	reaches zero).  In typical applications, it should write out the
 	*entire* buffer (use the saved start address and buffer length;
@@ -83,7 +83,7 @@ empty_output_buffer (j_compress_ptr cinfo)
 	returned.  A FALSE return should only be used when I/O suspension is
 	desired (this operating mode is discussed in the next section).
 
-term_destination (j_compress_ptr cinfo)
+term_destination (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	Terminate destination --- called by <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>() after all
 	data has been written.  In most applications, this must flush any
 	data remaining in the buffer.  Use either next_output_byte or
@@ -93,7 +93,7 @@ term_destination() is NOT called by <a href="jpeglib.h.html#L1111">jpeg_abort</a
 want the destination manager to be cleaned up during an abort, you must do it
 yourself.
 
-You will also need code to create a jpeg_destination_mgr struct, fill in its
+You will also need code to create a <a href="jpeglib.h.html#L772">jpeg_destination_mgr</a> struct, fill in its
 method pointers, and insert a pointer to the struct into the "dest" field of
 the JPEG compression object.  This can be done in-line in your setup code if
 you like, but it's probably cleaner to provide a separate routine similar to
@@ -115,13 +115,13 @@ address and total size in private fields not visible to the library.
 
 A data source manager provides five methods:
 
-init_source (j_decompress_ptr cinfo)
+init_source (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo)
 	Initialize source.  This is called by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() before any
 	data is actually read.  Unlike init_destination(), it may leave
 	bytes_in_buffer set to 0 (in which case a fill_input_buffer() call
 	will occur immediately).
 
-fill_input_buffer (j_decompress_ptr cinfo)
+fill_input_buffer (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo)
 	This is called whenever bytes_in_buffer has reached zero and more
 	data is wanted.  In typical applications, it should read fresh data
 	into the buffer (ignoring the current state of next_input_byte and
@@ -132,7 +132,7 @@ fill_input_buffer (j_decompress_ptr cinfo)
 	if TRUE is returned.  A FALSE return should only be used when I/O
 	suspension is desired (this mode is discussed in the next section).
 
-skip_input_data (j_decompress_ptr cinfo, long num_bytes)
+skip_input_data (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo, long num_bytes)
 	Skip num_bytes worth of data.  The buffer pointer and count should
 	be advanced over num_bytes input bytes, refilling the buffer as
 	needed.  This is used to skip over a potentially large amount of
@@ -142,7 +142,7 @@ skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 	skips are uncommon.  bytes_in_buffer may be zero on return.
 	A zero or negative skip count should be treated as a no-op.
 
-resync_to_restart (j_decompress_ptr cinfo, int desired)
+resync_to_restart (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo, int desired)
 	This routine is called only when the decompressor has failed to find
 	a restart (RSTn) marker where one is expected.  Its mission is to
 	find a suitable point for resuming decompression.  For most
@@ -154,7 +154,7 @@ resync_to_restart (j_decompress_ptr cinfo, int desired)
 	in jdmarker.c if you think you'd like to implement your own resync
 	procedure.
 
-term_source (j_decompress_ptr cinfo)
+term_source (<a href="jpeglib.h.html#L286">j_decompress_ptr</a> cinfo)
 	Terminate source --- called by <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>() after all
 	data has been read.  Often a no-op.
 
@@ -170,7 +170,7 @@ jdatasrc.c illustrates the recommended error recovery behavior.
 term_source() is NOT called by <a href="jpeglib.h.html#L1111">jpeg_abort</a>() or <a href="jpeglib.h.html#L1112">jpeg_destroy</a>().  If you want
 the source manager to be cleaned up during an abort, you must do it yourself.
 
-You will also need code to create a jpeg_source_mgr struct, fill in its method
+You will also need code to create a <a href="jpeglib.h.html#L784">jpeg_source_mgr</a> struct, fill in its method
 pointers, and insert a pointer to the struct into the "src" field of the JPEG
 decompression object.  This can be done in-line in your setup code if you
 like, but it's probably cleaner to provide a separate routine similar to the

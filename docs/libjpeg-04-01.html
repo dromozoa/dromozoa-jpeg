@@ -43,13 +43,13 @@ cinfo fields directly.
 
 The helper routines are:
 
-<a href="jpeglib.h.html#L986">jpeg_set_defaults</a> (j_compress_ptr cinfo)
+<a href="jpeglib.h.html#L986">jpeg_set_defaults</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	This routine sets all JPEG parameters to reasonable defaults, using
 	only the input image's color space (field in_color_space, which must
 	already be set in cinfo).  Many applications will only need to use
 	this routine and perhaps <a href="jpeglib.h.html#L991">jpeg_set_quality</a>().
 
-<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a> (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
+<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo, <a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> colorspace)
 	Sets the JPEG file's colorspace (field jpeg_color_space) as specified,
 	and sets other color-space-dependent parameters appropriately.  See
 	"Special color spaces", below, before using this.  A large number of
@@ -57,13 +57,13 @@ The helper routines are:
 	routine; if you want to twiddle individual parameters you should call
 	<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>() before rather than after.
 
-<a href="jpeglib.h.html#L990">jpeg_default_colorspace</a> (j_compress_ptr cinfo)
+<a href="jpeglib.h.html#L990">jpeg_default_colorspace</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	Selects an appropriate JPEG colorspace based on cinfo-&gt;in_color_space,
 	and calls <a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>().  This is actually a subroutine of
 	<a href="jpeglib.h.html#L986">jpeg_set_defaults</a>().  It's broken out in case you want to change
 	just the colorspace-dependent JPEG parameters.
 
-<a href="jpeglib.h.html#L991">jpeg_set_quality</a> (j_compress_ptr cinfo, int quality, boolean force_baseline)
+<a href="jpeglib.h.html#L991">jpeg_set_quality</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo, int quality, boolean force_baseline)
 	Constructs JPEG quantization tables appropriate for the indicated
 	quality setting.  The quality value is expressed on the 0..100 scale
 	recommended by IJG (cjpeg's "-quality" switch uses this routine).
@@ -77,7 +77,7 @@ The helper routines are:
 	is capable of reading the non-baseline files generated at low quality
 	settings when force_baseline is FALSE, but other decoders may not be.
 
-<a href="jpeglib.h.html#L993">jpeg_set_linear_quality</a> (j_compress_ptr cinfo, int scale_factor,
+<a href="jpeglib.h.html#L993">jpeg_set_linear_quality</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo, int scale_factor,
 			 boolean force_baseline)
 	Same as <a href="jpeglib.h.html#L991">jpeg_set_quality</a>() except that the generated tables are the
 	sample tables given in the JPEC spec section K.1, multiplied by the
@@ -95,11 +95,11 @@ int <a href="jpeglib.h.html#L1002">jpeg_quality_scaling</a> (int quality)
 	can't be expressed as a simple scalar multiplier, in which case the
 	premise of this routine collapses.  Caveat user.
 
-<a href="jpeglib.h.html#L996">jpeg_default_qtables</a> (j_compress_ptr cinfo, boolean force_baseline)
+<a href="jpeglib.h.html#L996">jpeg_default_qtables</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo, boolean force_baseline)
 	Set default quantization tables with linear q_scale_factor[] values
 	(see below).
 
-<a href="jpeglib.h.html#L998">jpeg_add_quant_table</a> (j_compress_ptr cinfo, int which_tbl,
+<a href="jpeglib.h.html#L998">jpeg_add_quant_table</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo, int which_tbl,
 		      const unsigned int *basic_table,
 		      int scale_factor, boolean force_baseline)
 	Allows an arbitrary quantization table to be created.  which_tbl
@@ -113,7 +113,7 @@ int <a href="jpeglib.h.html#L1002">jpeg_quality_scaling</a> (int quality)
 	routine, you must check the library version number.  Something like
 	"#if JPEG_LIB_VERSION &gt;= 61" is the right test.
 
-<a href="jpeglib.h.html#L1003">jpeg_simple_progression</a> (j_compress_ptr cinfo)
+<a href="jpeglib.h.html#L1003">jpeg_simple_progression</a> (<a href="jpeglib.h.html#L285">j_compress_ptr</a> cinfo)
 	Generates a default scan script for writing a progressive-JPEG file.
 	This is the recommended method of creating a progressive file,
 	unless you want to make a custom scan sequence.  You must ensure that
@@ -138,7 +138,7 @@ int block_size
 	introduced with IJG JPEG 8.  Setting the block_size parameter for
 	compression works with version 8c and later.
 
-J_DCT_METHOD dct_method
+<a href="jpeglib.h.html#L244">J_DCT_METHOD</a> dct_method
 	Selects the algorithm used for the DCT step.  Choices are:
 		JDCT_ISLOW: slow but accurate integer algorithm
 		JDCT_IFAST: faster, less accurate integer method
@@ -162,13 +162,13 @@ unsigned int scale_num, scale_denom
 	(The library design allows for arbitrary scaling ratios but this
 	is not likely to be implemented any time soon.)
 
-J_COLOR_SPACE jpeg_color_space
+<a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> jpeg_color_space
 int num_components
 	The JPEG color space and corresponding number of components; see
 	"Special color spaces", below, for more info.  We recommend using
 	<a href="jpeglib.h.html#L988">jpeg_set_colorspace</a>() if you want to change these.
 
-J_COLOR_TRANSFORM color_transform
+<a href="jpeglib.h.html#L236">J_COLOR_TRANSFORM</a> color_transform
 	Internal color transform identifier, writes LSE marker if nonzero
 	(requires decoder with inverse color transform support, introduced
 	with IJG JPEG 9).
@@ -200,7 +200,7 @@ int restart_in_rows
 	If you use restarts, you may want to use larger intervals in those
 	cases.
 
-const jpeg_scan_info * scan_info
+const <a href="jpeglib.h.html#L203">jpeg_scan_info</a> * scan_info
 int num_scans
 	By default, scan_info is NULL; this causes the compressor to write a
 	single-scan sequential JPEG file.  If not NULL, scan_info points to
@@ -255,7 +255,7 @@ boolean write_Adobe_marker
 	default behavior ensures that the JPEG file's color space can be
 	recognized by the decoder.
 
-JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
+<a href="jpeglib.h.html#L104">JQUANT_TBL</a> * quant_tbl_ptrs[NUM_QUANT_TBLS]
 	Pointers to coefficient quantization tables, one per table slot,
 	or NULL if no table is defined for a slot.  Usually these should
 	be set via one of the above helper routines; <a href="jpeglib.h.html#L998">jpeg_add_quant_table</a>()
@@ -287,8 +287,8 @@ int q_scale_factor[NUM_QUANT_TBLS]
 		cinfo-&gt;comp_info[0].v_samp_factor = 1;
 		cinfo-&gt;comp_info[0].h_samp_factor = 1;
 
-JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
-JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
+<a href="jpeglib.h.html#L120">JHUFF_TBL</a> * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
+<a href="jpeglib.h.html#L120">JHUFF_TBL</a> * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
 	Pointers to Huffman coding tables, one per table slot, or NULL if
 	no table is defined for a slot.  Slots 0 and 1 are filled with the
 	JPEG sample tables by <a href="jpeglib.h.html#L986">jpeg_set_defaults</a>().  If you need to allocate

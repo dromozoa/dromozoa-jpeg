@@ -45,8 +45,8 @@ To compress raw data, you must supply the data in the colorspace to be used
 in the JPEG file (please read the earlier section on Special color spaces)
 and downsampled to the sampling factors specified in the JPEG parameters.
 You must supply the data in the format used internally by the JPEG library,
-namely a JSAMPIMAGE array.  This is an array of pointers to two-dimensional
-arrays, each of type JSAMPARRAY.  Each 2-D array holds the values for one
+namely a <a href="jpeglib.h.html#L77">JSAMPIMAGE</a> array.  This is an array of pointers to two-dimensional
+arrays, each of type <a href="jpeglib.h.html#L76">JSAMPARRAY</a>.  Each 2-D array holds the values for one
 color component.  This structure is necessary since the components are of
 different sizes.  If the image dimensions are not a multiple of the MCU size,
 you must also pad the data correctly (usually, this is done by replicating
@@ -76,7 +76,7 @@ the following:
 
 To pass raw data to the library, call <a href="jpeglib.h.html#L1021">jpeg_write_raw_data</a>() in place of
 <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>().  The two routines work similarly except that
-<a href="jpeglib.h.html#L1021">jpeg_write_raw_data</a> takes a JSAMPIMAGE data array rather than JSAMPARRAY.
+<a href="jpeglib.h.html#L1021">jpeg_write_raw_data</a> takes a <a href="jpeglib.h.html#L77">JSAMPIMAGE</a> data array rather than <a href="jpeglib.h.html#L76">JSAMPARRAY</a>.
 The scanlines count passed to and returned from <a href="jpeglib.h.html#L1021">jpeg_write_raw_data</a> is
 measured in terms of the component with the largest v_samp_factor.
 

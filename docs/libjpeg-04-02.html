@@ -45,7 +45,7 @@ may be useful to the application in choosing decompression parameters:
 JDIMENSION image_width			Width and height of image
 JDIMENSION image_height
 int num_components			Number of color components
-J_COLOR_SPACE jpeg_color_space		Colorspace of image
+<a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> jpeg_color_space		Colorspace of image
 boolean saw_JFIF_marker			TRUE if a JFIF APP0 marker was seen
   UINT8 JFIF_major_version		Version information from JFIF marker
   UINT8 JFIF_minor_version
@@ -64,7 +64,7 @@ correctly.  See "Special color spaces", below, for more info.
 The decompression parameters that determine the basic properties of the
 returned image are:
 
-J_COLOR_SPACE out_color_space
+<a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> out_color_space
 	Output color space.  <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() sets an appropriate default
 	based on jpeg_color_space; typically it will be RGB or grayscale.
 	The application can change this field to request output in a different
@@ -106,7 +106,7 @@ boolean two_pass_quantize
 	fits-all colormap that is used otherwise.  Default is TRUE.  Ignored
 	when the application supplies its own color map.
 
-J_DITHER_MODE dither_mode
+<a href="jpeglib.h.html#L259">J_DITHER_MODE</a> dither_mode
 	Selects color dithering method.  Supported values are:
 		JDITHER_NONE	no dithering: fast, very low quality
 		JDITHER_ORDERED	ordered dither: moderate speed and quality
@@ -124,7 +124,7 @@ selects a suitable color map and sets these two fields itself.
 [Implementation restriction: at present, an externally supplied colormap is
 only accepted for 3-component output color spaces.]
 
-JSAMPARRAY colormap
+<a href="jpeglib.h.html#L76">JSAMPARRAY</a> colormap
 	The color map, represented as a 2-D pixel array of out_color_components
 	rows and actual_number_of_colors columns.  Ignored if not quantizing.
 	CAUTION: if the JPEG library creates its own colormap, the storage
@@ -136,7 +136,7 @@ int actual_number_of_colors
 
 Additional decompression parameters that the application may set include:
 
-J_DCT_METHOD dct_method
+<a href="jpeglib.h.html#L244">J_DCT_METHOD</a> dct_method
 	Selects the algorithm used for the DCT step.  Choices are the same
 	as described above for compression.
 

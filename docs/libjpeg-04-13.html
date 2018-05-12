@@ -49,7 +49,7 @@ you want fine resolution in the progress count.  (If you really need to use
 the callback mechanism for time-critical tasks like mouse tracking, you could
 insert additional calls inside some of the library's inner loops.)
 
-To establish a progress-monitor callback, create a struct jpeg_progress_mgr,
+To establish a progress-monitor callback, create a struct <a href="jpeglib.h.html#L760">jpeg_progress_mgr</a>,
 fill in its progress_monitor field with a pointer to your callback routine,
 and set cinfo-&gt;progress to point to the struct.  The callback will be called
 whenever cinfo-&gt;progress is non-NULL.  (This pointer is set to NULL by
@@ -59,7 +59,7 @@ make sure it will live as long as the JPEG object does.  Allocating from the
 JPEG memory manager with lifetime JPOOL_PERMANENT will work nicely.)  You
 can use the same callback routine for both compression and decompression.
 
-The jpeg_progress_mgr struct contains four fields which are set by the library:
+The <a href="jpeglib.h.html#L760">jpeg_progress_mgr</a> struct contains four fields which are set by the library:
 	long pass_counter;	/* work units completed in this pass */
 	long pass_limit;	/* total number of work units in this pass */
 	int completed_passes;	/* passes completed so far */

@@ -33,13 +33,13 @@ Here we revisit the JPEG decompression outline given in the overview.
 1. Allocate and initialize a JPEG decompression object.
 
 This is just like initialization for compression, as discussed above,
-except that the object is a "struct jpeg_decompress_struct" and you
+except that the object is a "struct <a href="jpeglib.h.html#L459">jpeg_decompress_struct</a>" and you
 call jpeg_create_decompress().  Error handling is exactly the same.
 
 Typical code:
 
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr jerr;
+	struct <a href="jpeglib.h.html#L459">jpeg_decompress_struct</a> cinfo;
+	struct <a href="jpeglib.h.html#L702">jpeg_error_mgr</a> jerr;
 	...
 	cinfo.err = <a href="jpeglib.h.html#L948">jpeg_std_error</a>(&amp;jerr);
 	jpeg_create_decompress(&amp;cinfo);
