@@ -26,14 +26,14 @@
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
+  class decompressor_handle_impl;
+
   class decompressor_handle {
   public:
-    explicit decompressor_handle();
+    decompressor_handle();
     ~decompressor_handle();
   private:
-    jpeg_decompress_struct cinfo_;
-    jpeg_error_mgr err_;
-    jpeg_source_mgr src_;
+    scoped_ptr<decompressor_handle_impl> impl_;
     decompressor_handle(const decompressor_handle&);
     decompressor_handle& operator=(const decompressor_handle&);
   };

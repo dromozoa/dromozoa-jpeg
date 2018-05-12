@@ -18,12 +18,28 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  decompressor_handle::decompressor_handle() : cinfo_(), err_(), src_() {
-    cinfo_.err = jpeg_std_error(&err_);
-    jpeg_create_decompress(&cinfo_);
-  }
+  class decompressor_handle_impl {
+  public:
+    decompressor_handle_impl() : cinfo_(), err_(), src_() {
+      cinfo_.err = jpeg_std_error(&err_);
+      cinfo_.client_data = this;
+      jpeg_create_decompress(&cinfo_);
+    }
 
-  decompressor_handle::~decompressor_handle() {
-    jpeg_destroy_decompress(&cinfo_);
-  }
+    ~decompressor_handle_impl() {
+      jpeg_destroy_decompress(&cinfo_);
+    }
+
+  private:
+    jpeg_decompress_struct cinfo_;
+    jpeg_error_mgr err_;
+    jpeg_source_mgr src_;
+
+    decompressor_handle_impl(const decompressor_handle_impl&);
+    decompressor_handle_impl& operator=(const decompressor_handle_impl&);
+  };
+
+  decompressor_handle::decompressor_handle() : impl_(new decompressor_handle_impl()) {}
+
+  decompressor_handle::~decompressor_handle() {}
 }
