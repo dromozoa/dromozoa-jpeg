@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Abbreviated datastreams and multiple images</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Abbreviated datastreams and multiple images</h2>
+
+<pre>
+A JPEG compression or decompression object can be reused to process multiple
+images.  This saves a small amount of time per image by eliminating the
+"create" and "destroy" operations, but that isn't the real purpose of the
+feature.  Rather, reuse of an object provides support for abbreviated JPEG
+datastreams.  Object reuse can also simplify processing a series of images in
+a single input or output file.  This section explains these features.
+
+A JPEG file normally contains several hundred bytes worth of quantization
+and Huffman tables.  In a situation where many images will be stored or
+transmitted with identical tables, this may represent an annoying overhead.
+The JPEG standard therefore permits tables to be omitted.  The standard
+defines three classes of JPEG datastreams:
+  * "Interchange" datastreams contain an image and all tables needed to decode
+     the image.  These are the usual kind of JPEG file.
+  * "Abbreviated image" datastreams contain an image, but are missing some or
+    all of the tables needed to decode that image.
+  * "Abbreviated table specification" (henceforth "tables-only") datastreams
+    contain only table specifications.
+To decode an abbreviated image, it is necessary to load the missing table(s)
+into the decoder beforehand.  This can be accomplished by reading a separate
+tables-only file.  A variant scheme uses a series of images in which the first
+image is an interchange (complete) datastream, while subsequent ones are
+abbreviated and rely on the tables loaded by the first image.  It is assumed
+that once the decoder has read a table, it will remember that table until a
+new definition for the same table number is encountered.
+
+It is the application designer's responsibility to figure out how to associate
+the correct tables with an abbreviated image.  While abbreviated datastreams
+can be useful in a closed environment, their use is strongly discouraged in
+any situation where data exchange with other applications might be needed.
+Caveat designer.
+
+The JPEG library provides support for reading and writing any combination of
+tables-only datastreams and abbreviated images.  In both compression and
+decompression objects, a quantization or Huffman table will be retained for
+the lifetime of the object, unless it is overwritten by a new table definition.
+
+
+To create abbreviated image datastreams, it is only necessary to tell the
+compressor not to emit some or all of the tables it is using.  Each
+quantization and Huffman table struct contains a boolean field "sent_table",
+which normally is initialized to FALSE.  For each table used by the image, the
+header-writing process emits the table and sets sent_table = TRUE unless it is
+already TRUE.  (In normal usage, this prevents outputting the same table
+definition multiple times, as would otherwise occur because the chroma
+components typically share tables.)  Thus, setting this field to TRUE before
+calling jpeg_start_compress() will prevent the table from being written at
+all.
+
+If you want to create a "pure" abbreviated image file containing no tables,
+just call "jpeg_suppress_tables(&amp;cinfo, TRUE)" after constructing all the
+tables.  If you want to emit some but not all tables, you'll need to set the
+individual sent_table fields directly.
+
+To create an abbreviated image, you must also call jpeg_start_compress()
+with a second parameter of FALSE, not TRUE.  Otherwise jpeg_start_compress()
+will force all the sent_table fields to FALSE.  (This is a safety feature to
+prevent abbreviated images from being created accidentally.)
+
+To create a tables-only file, perform the same parameter setup that you
+normally would, but instead of calling jpeg_start_compress() and so on, call
+jpeg_write_tables(&amp;cinfo).  This will write an abbreviated datastream
+containing only SOI, DQT and/or DHT markers, and EOI.  All the quantization
+and Huffman tables that are currently defined in the compression object will
+be emitted unless their sent_tables flag is already TRUE, and then all the
+sent_tables flags will be set TRUE.
+
+A sure-fire way to create matching tables-only and abbreviated image files
+is to proceed as follows:
+
+	create JPEG compression object
+	set JPEG parameters
+	set destination to tables-only file
+	jpeg_write_tables(&amp;cinfo);
+	set destination to image file
+	jpeg_start_compress(&amp;cinfo, FALSE);
+	write data...
+	jpeg_finish_compress(&amp;cinfo);
+
+Since the JPEG parameters are not altered between writing the table file and
+the abbreviated image file, the same tables are sure to be used.  Of course,
+you can repeat the jpeg_start_compress() ... jpeg_finish_compress() sequence
+many times to produce many abbreviated image files matching the table file.
+
+You cannot suppress output of the computed Huffman tables when Huffman
+optimization is selected.  (If you could, there'd be no way to decode the
+image...)  Generally, you don't want to set optimize_coding = TRUE when
+you are trying to produce abbreviated files.
+
+In some cases you might want to compress an image using tables which are
+not stored in the application, but are defined in an interchange or
+tables-only file readable by the application.  This can be done by setting up
+a JPEG decompression object to read the specification file, then copying the
+tables into your compression object.  See jpeg_copy_critical_parameters()
+for an example of copying quantization tables.
+
+
+To read abbreviated image files, you simply need to load the proper tables
+into the decompression object before trying to read the abbreviated image.
+If the proper tables are stored in the application program, you can just
+allocate the table structs and fill in their contents directly.  For example,
+to load a fixed quantization table into table slot "n":
+
+    if (cinfo.quant_tbl_ptrs[n] == NULL)
+      cinfo.quant_tbl_ptrs[n] = jpeg_alloc_quant_table((j_common_ptr) &amp;cinfo);
+    quant_ptr = cinfo.quant_tbl_ptrs[n];	/* quant_ptr is JQUANT_TBL* */
+    for (i = 0; i &lt; 64; i++) {
+      /* Qtable[] is desired quantization table, in natural array order */
+      quant_ptr-&gt;quantval[i] = Qtable[i];
+    }
+
+Code to load a fixed Huffman table is typically (for AC table "n"):
+
+    if (cinfo.ac_huff_tbl_ptrs[n] == NULL)
+      cinfo.ac_huff_tbl_ptrs[n] = jpeg_alloc_huff_table((j_common_ptr) &amp;cinfo);
+    huff_ptr = cinfo.ac_huff_tbl_ptrs[n];	/* huff_ptr is JHUFF_TBL* */
+    for (i = 1; i &lt;= 16; i++) {
+      /* counts[i] is number of Huffman codes of length i bits, i=1..16 */
+      huff_ptr-&gt;bits[i] = counts[i];
+    }
+    for (i = 0; i &lt; 256; i++) {
+      /* symbols[] is the list of Huffman symbols, in code-length order */
+      huff_ptr-&gt;huffval[i] = symbols[i];
+    }
+
+(Note that trying to set cinfo.quant_tbl_ptrs[n] to point directly at a
+constant JQUANT_TBL object is not safe.  If the incoming file happened to
+contain a quantization table definition, your master table would get
+overwritten!  Instead allocate a working table copy and copy the master table
+into it, as illustrated above.  Ditto for Huffman tables, of course.)
+
+You might want to read the tables from a tables-only file, rather than
+hard-wiring them into your application.  The jpeg_read_header() call is
+sufficient to read a tables-only file.  You must pass a second parameter of
+FALSE to indicate that you do not require an image to be present.  Thus, the
+typical scenario is
+
+	create JPEG decompression object
+	set source to tables-only file
+	jpeg_read_header(&amp;cinfo, FALSE);
+	set source to abbreviated image file
+	jpeg_read_header(&amp;cinfo, TRUE);
+	set decompression parameters
+	jpeg_start_decompress(&amp;cinfo);
+	read data...
+	jpeg_finish_decompress(&amp;cinfo);
+
+In some cases, you may want to read a file without knowing whether it contains
+an image or just tables.  In that case, pass FALSE and check the return value
+from jpeg_read_header(): it will be JPEG_HEADER_OK if an image was found,
+JPEG_HEADER_TABLES_ONLY if only tables were found.  (A third return value,
+JPEG_SUSPENDED, is possible when using a suspending data source manager.)
+Note that jpeg_read_header() will not complain if you read an abbreviated
+image for which you haven't loaded the missing tables; the missing-table check
+occurs later, in jpeg_start_decompress().
+
+
+It is possible to read a series of images from a single source file by
+repeating the jpeg_read_header() ... jpeg_finish_decompress() sequence,
+without releasing/recreating the JPEG object or the data source module.
+(If you did reinitialize, any partial bufferload left in the data source
+buffer at the end of one image would be discarded, causing you to lose the
+start of the next image.)  When you use this method, stored tables are
+automatically carried forward, so some of the images can be abbreviated images
+that depend on tables from earlier images.
+
+If you intend to write a series of images into a single destination file,
+you might want to make a specialized data destination module that doesn't
+flush the output buffer at term_destination() time.  This would speed things
+up by some trifling amount.  Of course, you'd need to remember to flush the
+buffer after the last image.  You can make the later images be abbreviated
+ones by passing FALSE to jpeg_start_compress().
+</pre>
+</div>
+</body>
+</html>

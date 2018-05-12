@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Special color spaces</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Special color spaces</h2>
+
+<pre>
+The JPEG standard itself is "color blind" and doesn't specify any particular
+color space.  It is customary to convert color data to a luminance/chrominance
+color space before compressing, since this permits greater compression.  The
+existing JPEG file interchange format standards specify YCbCr or GRAYSCALE
+data (JFIF version 1), GRAYSCALE, RGB, YCbCr, CMYK, or YCCK (Adobe), or BG_RGB
+or BG_YCC (big gamut color spaces, JFIF version 2).  For special applications
+such as multispectral images, other color spaces can be used,
+but it must be understood that such files will be unportable.
+
+The JPEG library can handle the most common colorspace conversions (namely
+RGB &lt;=&gt; YCbCr and CMYK &lt;=&gt; YCCK).  It can also deal with data of an unknown
+color space, passing it through without conversion.  If you deal extensively
+with an unusual color space, you can easily extend the library to understand
+additional color spaces and perform appropriate conversions.
+
+For compression, the source data's color space is specified by field
+in_color_space.  This is transformed to the JPEG file's color space given
+by jpeg_color_space.  jpeg_set_defaults() chooses a reasonable JPEG color
+space depending on in_color_space, but you can override this by calling
+jpeg_set_colorspace().  Of course you must select a supported transformation.
+jccolor.c currently supports the following transformations:
+	RGB =&gt; YCbCr
+	RGB =&gt; GRAYSCALE
+	RGB =&gt; BG_YCC
+	YCbCr =&gt; GRAYSCALE
+	YCbCr =&gt; BG_YCC
+	CMYK =&gt; YCCK
+plus the null transforms: GRAYSCALE =&gt; GRAYSCALE, RGB =&gt; RGB,
+BG_RGB =&gt; BG_RGB, YCbCr =&gt; YCbCr, BG_YCC =&gt; BG_YCC, CMYK =&gt; CMYK,
+YCCK =&gt; YCCK, and UNKNOWN =&gt; UNKNOWN.
+
+The file interchange format standards (JFIF and Adobe) specify APPn markers
+that indicate the color space of the JPEG file.  It is important to ensure
+that these are written correctly, or omitted if the JPEG file's color space
+is not one of the ones supported by the interchange standards.
+jpeg_set_colorspace() will set the compression parameters to include or omit
+the APPn markers properly, so long as it is told the truth about the JPEG
+color space.  For example, if you are writing some random 3-component color
+space without conversion, don't try to fake out the library by setting
+in_color_space and jpeg_color_space to JCS_YCbCr; use JCS_UNKNOWN.
+You may want to write an APPn marker of your own devising to identify
+the colorspace --- see "Special markers", below.
+
+When told that the color space is UNKNOWN, the library will default to using
+luminance-quality compression parameters for all color components.  You may
+well want to change these parameters.  See the source code for
+jpeg_set_colorspace(), in jcparam.c, for details.
+
+For decompression, the JPEG file's color space is given in jpeg_color_space,
+and this is transformed to the output color space out_color_space.
+jpeg_read_header's setting of jpeg_color_space can be relied on if the file
+conforms to JFIF or Adobe conventions, but otherwise it is no better than a
+guess.  If you know the JPEG file's color space for certain, you can override
+jpeg_read_header's guess by setting jpeg_color_space.  jpeg_read_header also
+selects a default output color space based on (its guess of) jpeg_color_space;
+set out_color_space to override this.  Again, you must select a supported
+transformation.  jdcolor.c currently supports
+	YCbCr =&gt; RGB
+	YCbCr =&gt; GRAYSCALE
+	BG_YCC =&gt; RGB
+	BG_YCC =&gt; GRAYSCALE
+	RGB =&gt; GRAYSCALE
+	GRAYSCALE =&gt; RGB
+	YCCK =&gt; CMYK
+as well as the null transforms.  (Since GRAYSCALE=&gt;RGB is provided, an
+application can force grayscale JPEGs to look like color JPEGs if it only
+wants to handle one case.)
+
+The two-pass color quantizer, jquant2.c, is specialized to handle RGB data
+(it weights distances appropriately for RGB colors).  You'll need to modify
+the code if you want to use it for non-RGB output color spaces.  Note that
+jquant2.c is used to map to an application-supplied colormap as well as for
+the normal two-pass colormap selection process.
+
+CAUTION: it appears that Adobe Photoshop writes inverted data in CMYK JPEG
+files: 0 represents 100% ink coverage, rather than 0% ink as you'd expect.
+This is arguably a bug in Photoshop, but if you need to work with Photoshop
+CMYK files, you will have to deal with it in your application.  We cannot
+"fix" this in the library by inverting the data during the CMYK&lt;=&gt;YCCK
+transform, because that would break other applications, notably Ghostscript.
+Photoshop versions prior to 3.0 write EPS files containing JPEG-encoded CMYK
+data in the same inverted-YCCK representation used in bare JPEG files, but
+the surrounding PostScript code performs an inversion using the PS image
+operator.  I am told that Photoshop 3.0 will write uninverted YCCK in
+EPS/JPEG files, and will omit the PS-level inversion.  (But the data
+polarity used in bare JPEG files will not change in 3.0.)  In either case,
+the JPEG library must not invert the data itself, or else Ghostscript would
+read these EPS files incorrectly.
+</pre>
+</div>
+</body>
+</html>

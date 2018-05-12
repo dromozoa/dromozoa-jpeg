@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Memory usage</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Memory usage</h2>
+
+<pre>
+Working memory requirements while performing compression or decompression
+depend on image dimensions, image characteristics (such as colorspace and
+JPEG process), and operating mode (application-selected options).
+
+As of v6b, the decompressor requires:
+ 1. About 24K in more-or-less-fixed-size data.  This varies a bit depending
+    on operating mode and image characteristics (particularly color vs.
+    grayscale), but it doesn't depend on image dimensions.
+ 2. Strip buffers (of size proportional to the image width) for IDCT and
+    upsampling results.  The worst case for commonly used sampling factors
+    is about 34 bytes * width in pixels for a color image.  A grayscale image
+    only needs about 8 bytes per pixel column.
+ 3. A full-image DCT coefficient buffer is needed to decode a multi-scan JPEG
+    file (including progressive JPEGs), or whenever you select buffered-image
+    mode.  This takes 2 bytes/coefficient.  At typical 2x2 sampling, that's
+    3 bytes per pixel for a color image.  Worst case (1x1 sampling) requires
+    6 bytes/pixel.  For grayscale, figure 2 bytes/pixel.
+ 4. To perform 2-pass color quantization, the decompressor also needs a
+    128K color lookup table and a full-image pixel buffer (3 bytes/pixel).
+This does not count any memory allocated by the application, such as a
+buffer to hold the final output image.
+
+The above figures are valid for 8-bit JPEG data precision and a machine with
+32-bit ints.  For 9-bit to 12-bit JPEG data, double the size of the strip
+buffers and quantization pixel buffer.  The "fixed-size" data will be
+somewhat smaller with 16-bit ints, larger with 64-bit ints.  Also, CMYK
+or other unusual color spaces will require different amounts of space.
+
+The full-image coefficient and pixel buffers, if needed at all, do not
+have to be fully RAM resident; you can have the library use temporary
+files instead when the total memory usage would exceed a limit you set.
+(But if your OS supports virtual memory, it's probably better to just use
+jmemnobs and let the OS do the swapping.)
+
+The compressor's memory requirements are similar, except that it has no need
+for color quantization.  Also, it needs a full-image DCT coefficient buffer
+if Huffman-table optimization is asked for, even if progressive mode is not
+requested.
+
+If you need more detailed information about memory usage in a particular
+situation, you can enable the MEM_STATS code in jmemmgr.c.
+</pre>
+</div>
+</body>
+</html>

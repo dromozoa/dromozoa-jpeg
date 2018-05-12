@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Error handling</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Error handling</h2>
+
+<pre>
+When the default error handler is used, any error detected inside the JPEG
+routines will cause a message to be printed on stderr, followed by exit().
+You can supply your own error handling routines to override this behavior
+and to control the treatment of nonfatal warnings and trace/debug messages.
+The file example.c illustrates the most common case, which is to have the
+application regain control after an error rather than exiting.
+
+The JPEG library never writes any message directly; it always goes through
+the error handling routines.  Three classes of messages are recognized:
+  * Fatal errors: the library cannot continue.
+  * Warnings: the library can continue, but the data is corrupt, and a
+    damaged output image is likely to result.
+  * Trace/informational messages.  These come with a trace level indicating
+    the importance of the message; you can control the verbosity of the
+    program by adjusting the maximum trace level that will be displayed.
+
+You may, if you wish, simply replace the entire JPEG error handling module
+(jerror.c) with your own code.  However, you can avoid code duplication by
+only replacing some of the routines depending on the behavior you need.
+This is accomplished by calling jpeg_std_error() as usual, but then overriding
+some of the method pointers in the jpeg_error_mgr struct, as illustrated by
+example.c.
+
+All of the error handling routines will receive a pointer to the JPEG object
+(a j_common_ptr which points to either a jpeg_compress_struct or a
+jpeg_decompress_struct; if you need to tell which, test the is_decompressor
+field).  This struct includes a pointer to the error manager struct in its
+"err" field.  Frequently, custom error handler routines will need to access
+additional data which is not known to the JPEG library or the standard error
+handler.  The most convenient way to do this is to embed either the JPEG
+object or the jpeg_error_mgr struct in a larger structure that contains
+additional fields; then casting the passed pointer provides access to the
+additional fields.  Again, see example.c for one way to do it.  (Beginning
+with IJG version 6b, there is also a void pointer "client_data" in each
+JPEG object, which the application can also use to find related data.
+The library does not touch client_data at all.)
+
+The individual methods that you might wish to override are:
+
+error_exit (j_common_ptr cinfo)
+	Receives control for a fatal error.  Information sufficient to
+	generate the error message has been stored in cinfo-&gt;err; call
+	output_message to display it.  Control must NOT return to the caller;
+	generally this routine will exit() or longjmp() somewhere.
+	Typically you would override this routine to get rid of the exit()
+	default behavior.  Note that if you continue processing, you should
+	clean up the JPEG object with jpeg_abort() or jpeg_destroy().
+
+output_message (j_common_ptr cinfo)
+	Actual output of any JPEG message.  Override this to send messages
+	somewhere other than stderr.  Note that this method does not know
+	how to generate a message, only where to send it.
+
+format_message (j_common_ptr cinfo, char * buffer)
+	Constructs a readable error message string based on the error info
+	stored in cinfo-&gt;err.  This method is called by output_message.  Few
+	applications should need to override this method.  One possible
+	reason for doing so is to implement dynamic switching of error message
+	language.
+
+emit_message (j_common_ptr cinfo, int msg_level)
+	Decide whether or not to emit a warning or trace message; if so,
+	calls output_message.  The main reason for overriding this method
+	would be to abort on warnings.  msg_level is -1 for warnings,
+	0 and up for trace messages.
+
+Only error_exit() and emit_message() are called from the rest of the JPEG
+library; the other two are internal to the error handler.
+
+The actual message texts are stored in an array of strings which is pointed to
+by the field err-&gt;jpeg_message_table.  The messages are numbered from 0 to
+err-&gt;last_jpeg_message, and it is these code numbers that are used in the
+JPEG library code.  You could replace the message texts (for instance, with
+messages in French or German) by changing the message table pointer.  See
+jerror.h for the default texts.  CAUTION: this table will almost certainly
+change or grow from one library version to the next.
+
+It may be useful for an application to add its own message texts that are
+handled by the same mechanism.  The error handler supports a second "add-on"
+message table for this purpose.  To define an addon table, set the pointer
+err-&gt;addon_message_table and the message numbers err-&gt;first_addon_message and
+err-&gt;last_addon_message.  If you number the addon messages beginning at 1000
+or so, you won't have to worry about conflicts with the library's built-in
+messages.  See the sample applications cjpeg/djpeg for an example of using
+addon messages (the addon messages are defined in cderror.h).
+
+Actual invocation of the error handler is done via macros defined in jerror.h:
+	ERREXITn(...)	for fatal errors
+	WARNMSn(...)	for corrupt-data warnings
+	TRACEMSn(...)	for trace and informational messages.
+These macros store the message code and any additional parameters into the
+error handler struct, then invoke the error_exit() or emit_message() method.
+The variants of each macro are for varying numbers of additional parameters.
+The additional parameters are inserted into the generated message using
+standard printf() format codes.
+
+See jerror.h and jerror.c for further details.
+</pre>
+</div>
+</body>
+</html>
