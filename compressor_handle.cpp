@@ -70,23 +70,27 @@ namespace dromozoa {
       return &cinfo_;
     }
 
-    JSAMPARRAY prepare_rows(JDIMENSION height, size_t rowbytes) {
-      size_t storage_size = height * rowbytes;
+    JSAMPARRAY prepare_rows(JDIMENSION height, size_t samples_per_row) {
+      size_t storage_size = height * samples_per_row;
       if (row_storage_.size() != storage_size || row_pointers_.size() != height) {
         std::vector<JSAMPLE> row_storage(storage_size);
         std::vector<JSAMPROW> row_pointers(height);
         row_storage.swap(row_storage_);
         row_pointers.swap(row_pointers_);
-        if (storage_size > 0) {
+        if (storage_size == 0) {
+          return 0;
+        } else {
           for (size_t y = 0; y < row_pointers_.size(); ++y) {
-            row_pointers_[y] = &row_storage_[y * rowbytes];
+            row_pointers_[y] = &row_storage_[y * samples_per_row];
           }
+          return &row_pointers_[0];
         }
-      }
-      if (storage_size > 0) {
-        return &row_pointers_[0];
       } else {
-        return 0;
+        if (storage_size == 0) {
+          return 0;
+        } else {
+          return &row_pointers_[0];
+        }
       }
     }
 
@@ -146,23 +150,26 @@ namespace dromozoa {
         empty_output_buffer_.get_field(L);
         lua_pushlstring(L, reinterpret_cast<const char*>(&buffer_[0]), buffer_.size() - dest_.free_in_buffer);
         if (lua_pcall(L, 1, 0, 0) == 0) {
-          dest_.next_output_byte = &buffer_[0];
-          dest_.free_in_buffer = buffer_.size();
-          return TRUE;
+          if (lua_isboolean(L, -1) && !lua_toboolean(L, -1)) {
+            return FALSE;
+          } else {
+            dest_.next_output_byte = &buffer_[0];
+            dest_.free_in_buffer = buffer_.size();
+            return TRUE;
+          }
         } else {
           error_exit(lua_tostring(L, -1));
-          return FALSE;
+          return TRUE; // unreachable
         }
       }
     }
 
     void term_destination() {
       if (buffer_.size() > dest_.free_in_buffer) {
-        empty_output_buffer();
+        if (!empty_output_buffer()) {
+          ERREXIT(&cinfo_, JERR_CANT_SUSPEND);
+        }
       }
-      dest_.next_output_byte = 0;
-      dest_.free_in_buffer = 0;
-      buffer_.clear();
     }
   };
 
@@ -190,7 +197,7 @@ namespace dromozoa {
     return impl_->get();
   }
 
-  JSAMPARRAY compressor_handle::prepare_rows(JDIMENSION height, size_t rowbytes) {
-    return impl_->prepare_rows(height, rowbytes);
+  JSAMPARRAY compressor_handle::prepare_rows(JDIMENSION height, size_t samples_per_row) {
+    return impl_->prepare_rows(height, samples_per_row);
   }
 }
