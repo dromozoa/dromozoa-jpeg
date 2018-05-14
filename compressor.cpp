@@ -102,6 +102,25 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_set_rows(lua_State* L) {
+      compressor_handle* self = check_compressor_handle(L, 1);
+      JDIMENSION height = self->get()->image_height;
+      size_t samples_per_row = self->get()->image_width * self->get()->input_components;
+      if (JSAMPARRAY scanlines = self->prepare_scanlines(height, samples_per_row)) {
+        for (JDIMENSION y = 0; y < height; ++y) {
+          luaX_get_field(L, 2, y + 1);
+          size_t length = 0;
+          if (const char* ptr = lua_tolstring(L, -1, &length)) {
+            memcpy(scanlines[y], ptr, std::min(samples_per_row, length));
+          }
+          lua_pop(L, 1);
+        }
+        luaX_push_success(L);
+      } else {
+        error_exit("scanlines not prepared");
+      }
+    }
+
     void impl_set_row(lua_State* L) {
       compressor_handle* self = check_compressor_handle(L, 1);
       JDIMENSION height = self->get()->image_height;
@@ -165,9 +184,8 @@ namespace dromozoa {
       luaX_set_field(L, -1, "set_colorspace", impl_set_colorspace);
       luaX_set_field(L, -1, "default_colorspace", impl_default_colorspace);
       luaX_set_field(L, -1, "set_quality", impl_set_quality);
-
+      luaX_set_field(L, -1, "set_rows", impl_set_rows);
       luaX_set_field(L, -1, "set_row", impl_set_row);
-
       luaX_set_field(L, -1, "start_compress", impl_start_compress);
       luaX_set_field(L, -1, "write_scanlines", impl_write_scanlines);
       luaX_set_field(L, -1, "finish_compress", impl_finish_compress);
