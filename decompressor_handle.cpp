@@ -17,6 +17,7 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "common.hpp"
@@ -24,7 +25,7 @@
 namespace dromozoa {
   class decompressor_handle_impl {
   public:
-    decompressor_handle_impl() : cinfo_(), err_(), src_(), default_output_message_() {
+    explicit decompressor_handle_impl(size_t buffer_size) : cinfo_(), err_(), src_(), default_output_message_(), buffer_(buffer_size) {
       jpeg_std_error(&err_);
       err_.error_exit = error_exit;
       default_output_message_ = err_.output_message;
@@ -148,11 +149,11 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         fill_input_buffer_.get_field(L);
-        if (lua_pcall(L, 0, 1, 0) == 0) {
+        luaX_push(L, buffer_.size());
+        if (lua_pcall(L, 1, 1, 0) == 0) {
           size_t bytes = 0;
           if (const char* ptr = lua_tolstring(L, -1, &bytes)) {
-            buffer_.resize(bytes);
-            memcpy(&buffer_[0], ptr, bytes);
+            memcpy(&buffer_[0], ptr, std::min(bytes, buffer_.size()));
             src_.next_input_byte = &buffer_[0];
             src_.bytes_in_buffer = bytes;
             return TRUE;
@@ -172,8 +173,8 @@ namespace dromozoa {
     }
   };
 
-  decompressor_handle_impl* decompressor_handle::create() {
-    return new decompressor_handle_impl();
+  decompressor_handle_impl* decompressor_handle::create(size_t buffer_size) {
+    return new decompressor_handle_impl(buffer_size);
   }
 
   decompressor_handle::decompressor_handle(decompressor_handle_impl* impl) : impl_(impl) {}

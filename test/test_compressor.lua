@@ -19,7 +19,7 @@ local jpeg = require "dromozoa.jpeg"
 
 local verbose = os.getenv "VERBOSE" == "1"
 
-local compressor = assert(jpeg.compressor())
+local compressor = assert(jpeg.compressor(256))
 
 local handle = assert(io.open("test.jpg", "wb"))
 assert(compressor:set_empty_output_buffer(function (data)

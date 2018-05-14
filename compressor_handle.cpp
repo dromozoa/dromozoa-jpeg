@@ -24,7 +24,7 @@
 namespace dromozoa {
   class compressor_handle_impl {
   public:
-    compressor_handle_impl() : cinfo_(), err_(), dest_(), default_output_message_() {
+    explicit compressor_handle_impl(size_t buffer_size) : cinfo_(), err_(), dest_(), default_output_message_(), buffer_(buffer_size) {
       jpeg_std_error(&err_);
       err_.error_exit = error_exit;
       default_output_message_ = err_.output_message;
@@ -135,7 +135,6 @@ namespace dromozoa {
     }
 
     void init_destination() {
-      buffer_.resize(4096);
       dest_.next_output_byte = &buffer_[0];
       dest_.free_in_buffer = buffer_.size();
     }
@@ -167,8 +166,8 @@ namespace dromozoa {
     }
   };
 
-  compressor_handle_impl* compressor_handle::create() {
-    return new compressor_handle_impl();
+  compressor_handle_impl* compressor_handle::create(size_t buffer_size) {
+    return new compressor_handle_impl(buffer_size);
   }
 
   compressor_handle::compressor_handle(compressor_handle_impl* impl) : impl_(impl) {}

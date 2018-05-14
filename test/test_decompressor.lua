@@ -19,13 +19,13 @@ local jpeg = require "dromozoa.jpeg"
 
 local verbose = os.getenv "VERBOSE" == "1"
 
-local decompressor = assert(jpeg.decompressor())
+local decompressor = assert(jpeg.decompressor(256))
 
 local handle = assert(io.open("docs/l_hires.jpg", "rb"))
-assert(decompressor:set_fill_input_buffer(function ()
-  local data = handle:read(4096)
+assert(decompressor:set_fill_input_buffer(function (n)
+  local data = handle:read(n)
   if verbose then
-    io.stderr:write("fill_input_buffer ", #data, "\n")
+    io.stderr:write("fill_input_buffer ", n, ", ", #data, "\n")
   end
   return data
 end))

@@ -32,7 +32,8 @@ namespace dromozoa {
     }
 
     void impl_call(lua_State* L) {
-      luaX_new<decompressor_handle>(L, decompressor_handle::create());
+      size_t buffer_size = luaX_opt_integer<size_t>(L, 2, 4096);
+      luaX_new<decompressor_handle>(L, decompressor_handle::create(buffer_size));
       luaX_set_metatable(L, "dromozoa.jpeg.decompressor");
     }
 

@@ -33,7 +33,7 @@ namespace dromozoa {
 
   class decompressor_handle {
   public:
-    static decompressor_handle_impl* create();
+    static decompressor_handle_impl* create(size_t buffer_size);
     explicit decompressor_handle(decompressor_handle_impl* impl);
     ~decompressor_handle();
     void destroy();
@@ -51,7 +51,7 @@ namespace dromozoa {
 
   class compressor_handle {
   public:
-    static compressor_handle_impl* create();
+    static compressor_handle_impl* create(size_t buffer_size);
     explicit compressor_handle(compressor_handle_impl* impl);
     ~compressor_handle();
     void destroy();
