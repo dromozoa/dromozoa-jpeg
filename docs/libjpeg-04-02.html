@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Decompression parameter selection</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Decompression parameter selection</h2>
+
+<pre>
+Decompression parameter selection is somewhat simpler than compression
+parameter selection, since all of the JPEG internal parameters are
+recorded in the source file and need not be supplied by the application.
+(Unless you are working with abbreviated files, in which case see
+"Abbreviated datastreams", below.)  Decompression parameters control
+the postprocessing done on the image to deliver it in a format suitable
+for the application's use.  Many of the parameters control speed/quality
+tradeoffs, in which faster decompression may be obtained at the price of
+a poorer-quality image.  The defaults select the highest quality (slowest)
+processing.
+
+The following fields in the JPEG object are set by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() and
+may be useful to the application in choosing decompression parameters:
+
+JDIMENSION image_width			Width and height of image
+JDIMENSION image_height
+int num_components			Number of color components
+<a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> jpeg_color_space		Colorspace of image
+boolean saw_JFIF_marker			TRUE if a JFIF APP0 marker was seen
+  UINT8 JFIF_major_version		Version information from JFIF marker
+  UINT8 JFIF_minor_version
+  UINT8 density_unit			Resolution data from JFIF marker
+  UINT16 X_density
+  UINT16 Y_density
+boolean saw_Adobe_marker		TRUE if an Adobe APP14 marker was seen
+  UINT8 Adobe_transform			Color transform code from Adobe marker
+
+The JPEG color space, unfortunately, is something of a guess since the JPEG
+standard proper does not provide a way to record it.  In practice most files
+adhere to the JFIF or Adobe conventions, and the decoder will recognize these
+correctly.  See "Special color spaces", below, for more info.
+
+
+The decompression parameters that determine the basic properties of the
+returned image are:
+
+<a href="jpeglib.h.html#L229">J_COLOR_SPACE</a> out_color_space
+	Output color space.  <a href="jpeglib.h.html#L1039">jpeg_read_header</a>() sets an appropriate default
+	based on jpeg_color_space; typically it will be RGB or grayscale.
+	The application can change this field to request output in a different
+	colorspace.  For example, set it to JCS_GRAYSCALE to get grayscale
+	output from a color file.  (This is useful for previewing: grayscale
+	output is faster than full color since the color components need not
+	be processed.)  Note that not all possible color space transforms are
+	currently implemented; you may need to extend jdcolor.c if you want an
+	unusual conversion.
+
+unsigned int scale_num, scale_denom
+	Scale the image by the fraction scale_num/scale_denom.  Currently,
+	the supported scaling ratios are M/N with all M from 1 to 16, where
+	N is the source DCT size, which is 8 for baseline JPEG.  (The library
+	design allows for arbitrary scaling ratios but this is not likely
+	to be implemented any time soon.)  The values are initialized by
+	<a href="jpeglib.h.html#L1039">jpeg_read_header</a>() with the source DCT size.  For baseline JPEG
+	this is 8/8.  If you change only the scale_num value while leaving
+	the other unchanged, then this specifies the DCT scaled size to be
+	applied on the given input.  For baseline JPEG this is equivalent
+	to M/8 scaling, since the source DCT size for baseline JPEG is 8.
+	Smaller scaling ratios permit significantly faster decoding since
+	fewer pixels need be processed and a simpler IDCT method can be used.
+
+boolean quantize_colors
+	If set TRUE, colormapped output will be delivered.  Default is FALSE,
+	meaning that full-color output will be delivered.
+
+The next three parameters are relevant only if quantize_colors is TRUE.
+
+int desired_number_of_colors
+	Maximum number of colors to use in generating a library-supplied color
+	map (the actual number of colors is returned in a different field).
+	Default 256.  Ignored when the application supplies its own color map.
+
+boolean two_pass_quantize
+	If TRUE, an extra pass over the image is made to select a custom color
+	map for the image.  This usually looks a lot better than the one-size-
+	fits-all colormap that is used otherwise.  Default is TRUE.  Ignored
+	when the application supplies its own color map.
+
+<a href="jpeglib.h.html#L259">J_DITHER_MODE</a> dither_mode
+	Selects color dithering method.  Supported values are:
+		JDITHER_NONE	no dithering: fast, very low quality
+		JDITHER_ORDERED	ordered dither: moderate speed and quality
+		JDITHER_FS	Floyd-Steinberg dither: slow, high quality
+	Default is JDITHER_FS.  (At present, ordered dither is implemented
+	only in the single-pass, standard-colormap case.  If you ask for
+	ordered dither when two_pass_quantize is TRUE or when you supply
+	an external color map, you'll get F-S dithering.)
+
+When quantize_colors is TRUE, the target color map is described by the next
+two fields.  colormap is set to NULL by <a href="jpeglib.h.html#L1039">jpeg_read_header</a>().  The application
+can supply a color map by setting colormap non-NULL and setting
+actual_number_of_colors to the map size.  Otherwise, <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>()
+selects a suitable color map and sets these two fields itself.
+[Implementation restriction: at present, an externally supplied colormap is
+only accepted for 3-component output color spaces.]
+
+<a href="jpeglib.h.html#L76">JSAMPARRAY</a> colormap
+	The color map, represented as a 2-D pixel array of out_color_components
+	rows and actual_number_of_colors columns.  Ignored if not quantizing.
+	CAUTION: if the JPEG library creates its own colormap, the storage
+	pointed to by this field is released by <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>().
+	Copy the colormap somewhere else first, if you want to save it.
+
+int actual_number_of_colors
+	The number of colors in the color map.
+
+Additional decompression parameters that the application may set include:
+
+<a href="jpeglib.h.html#L244">J_DCT_METHOD</a> dct_method
+	Selects the algorithm used for the DCT step.  Choices are the same
+	as described above for compression.
+
+boolean do_fancy_upsampling
+	If TRUE, use direct DCT scaling with DCT size &gt; 8 for upsampling
+	of chroma components.
+	If FALSE, use only DCT size &lt;= 8 and simple separate upsampling.
+	Default is TRUE.
+	For better image stability in multiple generation compression cycles
+	it is preferable that this value matches the corresponding
+	do_fancy_downsampling value in compression.
+
+boolean do_block_smoothing
+	If TRUE, interblock smoothing is applied in early stages of decoding
+	progressive JPEG files; if FALSE, not.  Default is TRUE.  Early
+	progression stages look "fuzzy" with smoothing, "blocky" without.
+	In any case, block smoothing ceases to be applied after the first few
+	AC coefficients are known to full accuracy, so it is relevant only
+	when using buffered-image mode for progressive images.
+
+boolean enable_1pass_quant
+boolean enable_external_quant
+boolean enable_2pass_quant
+	These are significant only in buffered-image mode, which is
+	described in its own section below.
+
+
+The output image dimensions are given by the following fields.  These are
+computed from the source image dimensions and the decompression parameters
+by <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().  You can also call <a href="jpeglib.h.html#L1080">jpeg_calc_output_dimensions</a>()
+to obtain the values that will result from the current parameter settings.
+This can be useful if you are trying to pick a scaling ratio that will get
+close to a desired target size.  It's also important if you are using the
+JPEG library's memory manager to allocate output buffer space, because you
+are supposed to request such buffers *before* <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>().
+
+JDIMENSION output_width		Actual dimensions of output image.
+JDIMENSION output_height
+int out_color_components	Number of color components in out_color_space.
+int output_components		Number of color components returned.
+int rec_outbuf_height		Recommended height of scanline buffer.
+
+When quantizing colors, output_components is 1, indicating a single color map
+index per pixel.  Otherwise it equals out_color_components.  The output arrays
+are required to be output_width * output_components JSAMPLEs wide.
+
+rec_outbuf_height is the recommended minimum height (in scanlines) of the
+buffer passed to <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>().  If the buffer is smaller, the
+library will still work, but time will be wasted due to unnecessary data
+copying.  In high-quality modes, rec_outbuf_height is always 1, but some
+faster, lower-quality modes set it to larger values (typically 2 to 4).
+If you are going to ask for a high-speed processing mode, you may as well
+go to the trouble of honoring rec_outbuf_height so as to avoid data copying.
+(An output buffer larger than rec_outbuf_height lines is OK, but won't
+provide any material speed improvement over that height.)
+</pre>
+</div>
+</body>
+</html>

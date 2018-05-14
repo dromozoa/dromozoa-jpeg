@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Portability considerations</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Portability considerations</h2>
+
+<pre>
+The JPEG library has been written to be extremely portable; the sample
+applications cjpeg and djpeg are slightly less so.  This section summarizes
+the design goals in this area.  (If you encounter any bugs that cause the
+library to be less portable than is claimed here, we'd appreciate hearing
+about them.)
+
+The code works fine on ANSI C, C++, and pre-ANSI C compilers, using any of
+the popular system include file setups, and some not-so-popular ones too.
+See install.txt for configuration procedures.
+
+The code is not dependent on the exact sizes of the C data types.  As
+distributed, we make the assumptions that
+	char	is at least 8 bits wide
+	short	is at least 16 bits wide
+	int	is at least 16 bits wide
+	long	is at least 32 bits wide
+(These are the minimum requirements of the ANSI C standard.)  Wider types will
+work fine, although memory may be used inefficiently if char is much larger
+than 8 bits or short is much bigger than 16 bits.  The code should work
+equally well with 16- or 32-bit ints.
+
+In a system where these assumptions are not met, you may be able to make the
+code work by modifying the typedefs in jmorecfg.h.  However, you will probably
+have difficulty if int is less than 16 bits wide, since references to plain
+int abound in the code.
+
+char can be either signed or unsigned, although the code runs faster if an
+unsigned char type is available.  If char is wider than 8 bits, you will need
+to redefine JOCTET and/or provide custom data source/destination managers so
+that JOCTET represents exactly 8 bits of data on external storage.
+
+The JPEG library proper does not assume ASCII representation of characters.
+But some of the image file I/O modules in cjpeg/djpeg do have ASCII
+dependencies in file-header manipulation; so does cjpeg's select_file_type()
+routine.
+
+The JPEG library does not rely heavily on the C library.  In particular, C
+stdio is used only by the data source/destination modules and the error
+handler, all of which are application-replaceable.  (cjpeg/djpeg are more
+heavily dependent on stdio.)  malloc and free are called only from the memory
+manager "back end" module, so you can use a different memory allocator by
+replacing that one file.
+
+The code generally assumes that C names must be unique in the first 15
+characters.  However, global function names can be made unique in the
+first 6 characters by defining NEED_SHORT_EXTERNAL_NAMES.
+
+More info about porting the code may be gleaned by reading jconfig.txt,
+jmorecfg.h, and jinclude.h.
+</pre>
+</div>
+</body>
+</html>

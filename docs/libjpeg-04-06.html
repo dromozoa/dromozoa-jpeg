@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / I/O suspension</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>I/O suspension</h2>
+
+<pre>
+Some applications need to use the JPEG library as an incremental memory-to-
+memory filter: when the compressed data buffer is filled or emptied, they want
+control to return to the outer loop, rather than expecting that the buffer can
+be emptied or reloaded within the data source/destination manager subroutine.
+The library supports this need by providing an "I/O suspension" mode, which we
+describe in this section.
+
+The I/O suspension mode is not a panacea: nothing is guaranteed about the
+maximum amount of time spent in any one call to the library, so it will not
+eliminate response-time problems in single-threaded applications.  If you
+need guaranteed response time, we suggest you "bite the bullet" and implement
+a real multi-tasking capability.
+
+To use I/O suspension, cooperation is needed between the calling application
+and the data source or destination manager; you will always need a custom
+source/destination manager.  (Please read the previous section if you haven't
+already.)  The basic idea is that the empty_output_buffer() or
+fill_input_buffer() routine is a no-op, merely returning FALSE to indicate
+that it has done nothing.  Upon seeing this, the JPEG library suspends
+operation and returns to its caller.  The surrounding application is
+responsible for emptying or refilling the work buffer before calling the
+JPEG library again.
+
+Compression suspension:
+
+For compression suspension, use an empty_output_buffer() routine that returns
+FALSE; typically it will not do anything else.  This will cause the
+compressor to return to the caller of <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>(), with the return
+value indicating that not all the supplied scanlines have been accepted.
+The application must make more room in the output buffer, adjust the output
+buffer pointer/count appropriately, and then call <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>()
+again, pointing to the first unconsumed scanline.
+
+When forced to suspend, the compressor will backtrack to a convenient stopping
+point (usually the start of the current MCU); it will regenerate some output
+data when restarted.  Therefore, although empty_output_buffer() is only
+called when the buffer is filled, you should NOT write out the entire buffer
+after a suspension.  Write only the data up to the current position of
+next_output_byte/free_in_buffer.  The data beyond that point will be
+regenerated after resumption.
+
+Because of the backtracking behavior, a good-size output buffer is essential
+for efficiency; you don't want the compressor to suspend often.  (In fact, an
+overly small buffer could lead to infinite looping, if a single MCU required
+more data than would fit in the buffer.)  We recommend a buffer of at least
+several Kbytes.  You may want to insert explicit code to ensure that you don't
+call <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>() unless there is a reasonable amount of space in
+the output buffer; in other words, flush the buffer before trying to compress
+more data.
+
+The compressor does not allow suspension while it is trying to write JPEG
+markers at the beginning and end of the file.  This means that:
+  * At the beginning of a compression operation, there must be enough free
+    space in the output buffer to hold the header markers (typically 600 or
+    so bytes).  The recommended buffer size is bigger than this anyway, so
+    this is not a problem as long as you start with an empty buffer.  However,
+    this restriction might catch you if you insert large special markers, such
+    as a JFIF thumbnail image, without flushing the buffer afterwards.
+  * When you call <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(), there must be enough space in the
+    output buffer to emit any buffered data and the final EOI marker.  In the
+    current implementation, half a dozen bytes should suffice for this, but
+    for safety's sake we recommend ensuring that at least 100 bytes are free
+    before calling <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>().
+
+A more significant restriction is that <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>() cannot suspend.
+This means you cannot use suspension with multi-pass operating modes, namely
+Huffman code optimization and multiple-scan output.  Those modes write the
+whole file during <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(), which will certainly result in
+buffer overrun.  (Note that this restriction applies only to compression,
+not decompression.  The decompressor supports input suspension in all of its
+operating modes.)
+
+Decompression suspension:
+
+For decompression suspension, use a fill_input_buffer() routine that simply
+returns FALSE (except perhaps during error recovery, as discussed below).
+This will cause the decompressor to return to its caller with an indication
+that suspension has occurred.  This can happen at four places:
+  * <a href="jpeglib.h.html#L1039">jpeg_read_header</a>(): will return JPEG_SUSPENDED.
+  * <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>(): will return FALSE, rather than its usual TRUE.
+  * <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(): will return the number of scanlines already
+	completed (possibly 0).
+  * <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>(): will return FALSE, rather than its usual TRUE.
+The surrounding application must recognize these cases, load more data into
+the input buffer, and repeat the call.  In the case of <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(),
+increment the passed pointers past any scanlines successfully read.
+
+Just as with compression, the decompressor will typically backtrack to a
+convenient restart point before suspending.  When fill_input_buffer() is
+called, next_input_byte/bytes_in_buffer point to the current restart point,
+which is where the decompressor will backtrack to if FALSE is returned.
+The data beyond that position must NOT be discarded if you suspend; it needs
+to be re-read upon resumption.  In most implementations, you'll need to shift
+this data down to the start of your work buffer and then load more data after
+it.  Again, this behavior means that a several-Kbyte work buffer is essential
+for decent performance; furthermore, you should load a reasonable amount of
+new data before resuming decompression.  (If you loaded, say, only one new
+byte each time around, you could waste a LOT of cycles.)
+
+The skip_input_data() source manager routine requires special care in a
+suspension scenario.  This routine is NOT granted the ability to suspend the
+decompressor; it can decrement bytes_in_buffer to zero, but no more.  If the
+requested skip distance exceeds the amount of data currently in the input
+buffer, then skip_input_data() must set bytes_in_buffer to zero and record the
+additional skip distance somewhere else.  The decompressor will immediately
+call fill_input_buffer(), which should return FALSE, which will cause a
+suspension return.  The surrounding application must then arrange to discard
+the recorded number of bytes before it resumes loading the input buffer.
+(Yes, this design is rather baroque, but it avoids complexity in the far more
+common case where a non-suspending source manager is used.)
+
+If the input data has been exhausted, we recommend that you emit a warning
+and insert dummy EOI markers just as a non-suspending data source manager
+would do.  This can be handled either in the surrounding application logic or
+within fill_input_buffer(); the latter is probably more efficient.  If
+fill_input_buffer() knows that no more data is available, it can set the
+pointer/count to point to a dummy EOI marker and then return TRUE just as
+though it had read more data in a non-suspending situation.
+
+The decompressor does not attempt to suspend within standard JPEG markers;
+instead it will backtrack to the start of the marker and reprocess the whole
+marker next time.  Hence the input buffer must be large enough to hold the
+longest standard marker in the file.  Standard JPEG markers should normally
+not exceed a few hundred bytes each (DHT tables are typically the longest).
+We recommend at least a 2K buffer for performance reasons, which is much
+larger than any correct marker is likely to be.  For robustness against
+damaged marker length counts, you may wish to insert a test in your
+application for the case that the input buffer is completely full and yet
+the decoder has suspended without consuming any data --- otherwise, if this
+situation did occur, it would lead to an endless loop.  (The library can't
+provide this test since it has no idea whether "the buffer is full", or
+even whether there is a fixed-size input buffer.)
+
+The input buffer would need to be 64K to allow for arbitrary COM or APPn
+markers, but these are handled specially: they are either saved into allocated
+memory, or skipped over by calling skip_input_data().  In the former case,
+suspension is handled correctly, and in the latter case, the problem of
+buffer overrun is placed on skip_input_data's shoulders, as explained above.
+Note that if you provide your own marker handling routine for large markers,
+you should consider how to deal with buffer overflow.
+
+Multiple-buffer management:
+
+In some applications it is desirable to store the compressed data in a linked
+list of buffer areas, so as to avoid data copying.  This can be handled by
+having empty_output_buffer() or fill_input_buffer() set the pointer and count
+to reference the next available buffer; FALSE is returned only if no more
+buffers are available.  Although seemingly straightforward, there is a
+pitfall in this approach: the backtrack that occurs when FALSE is returned
+could back up into an earlier buffer.  For example, when fill_input_buffer()
+is called, the current pointer &amp; count indicate the backtrack restart point.
+Since fill_input_buffer() will set the pointer and count to refer to a new
+buffer, the restart position must be saved somewhere else.  Suppose a second
+call to fill_input_buffer() occurs in the same library call, and no
+additional input data is available, so fill_input_buffer must return FALSE.
+If the JPEG library has not moved the pointer/count forward in the current
+buffer, then *the correct restart point is the saved position in the prior
+buffer*.  Prior buffers may be discarded only after the library establishes
+a restart point within a later buffer.  Similar remarks apply for output into
+a chain of buffers.
+
+The library will never attempt to backtrack over a skip_input_data() call,
+so any skipped data can be permanently discarded.  You still have to deal
+with the case of skipping not-yet-received data, however.
+
+It's much simpler to use only a single buffer; when fill_input_buffer() is
+called, move any unconsumed data (beyond the current pointer/count) down to
+the beginning of this buffer and then load new data into the remaining buffer
+space.  This approach requires a little more data copying but is far easier
+to get right.
+</pre>
+</div>
+</body>
+</html>

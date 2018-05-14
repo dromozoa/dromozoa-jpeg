@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Memory management</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Memory management</h2>
+
+<pre>
+This section covers some key facts about the JPEG library's built-in memory
+manager.  For more info, please read structure.txt's section about the memory
+manager, and consult the source code if necessary.
+
+All memory and temporary file allocation within the library is done via the
+memory manager.  If necessary, you can replace the "back end" of the memory
+manager to control allocation yourself (for example, if you don't want the
+library to use malloc() and free() for some reason).
+
+Some data is allocated "permanently" and will not be freed until the JPEG
+object is destroyed.  Most data is allocated "per image" and is freed by
+<a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>, <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>, or <a href="jpeglib.h.html#L1111">jpeg_abort</a>.  You can call the
+memory manager yourself to allocate structures that will automatically be
+freed at these times.  Typical code for this is
+  ptr = (*cinfo-&gt;mem-&gt;alloc_small) ((<a href="jpeglib.h.html#L284">j_common_ptr</a>) cinfo, JPOOL_IMAGE, size);
+Use JPOOL_PERMANENT to get storage that lasts as long as the JPEG object.
+Use alloc_large instead of alloc_small for anything bigger than a few Kbytes.
+There are also alloc_sarray and alloc_barray routines that automatically
+build 2-D sample or block arrays.
+
+The library's minimum space requirements to process an image depend on the
+image's width, but not on its height, because the library ordinarily works
+with "strip" buffers that are as wide as the image but just a few rows high.
+Some operating modes (eg, two-pass color quantization) require full-image
+buffers.  Such buffers are treated as "virtual arrays": only the current strip
+need be in memory, and the rest can be swapped out to a temporary file.
+
+If you use the simplest memory manager back end (jmemnobs.c), then no
+temporary files are used; virtual arrays are simply malloc()'d.  Images bigger
+than memory can be processed only if your system supports virtual memory.
+The other memory manager back ends support temporary files of various flavors
+and thus work in machines without virtual memory.  They may also be useful on
+Unix machines if you need to process images that exceed available swap space.
+
+When using temporary files, the library will make the in-memory buffers for
+its virtual arrays just big enough to stay within a "maximum memory" setting.
+Your application can set this limit by setting cinfo-&gt;mem-&gt;max_memory_to_use
+after creating the JPEG object.  (Of course, there is still a minimum size for
+the buffers, so the max-memory setting is effective only if it is bigger than
+the minimum space needed.)  If you allocate any large structures yourself, you
+must allocate them before <a href="jpeglib.h.html#L1010">jpeg_start_compress</a>() or <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>() in
+order to have them counted against the max memory limit.  Also keep in mind
+that space allocated with alloc_small() is ignored, on the assumption that
+it's too small to be worth worrying about; so a reasonable safety margin
+should be left when setting max_memory_to_use.
+
+If you use the jmemname.c or jmemdos.c memory manager back end, it is
+important to clean up the JPEG object properly to ensure that the temporary
+files get deleted.  (This is especially crucial with jmemdos.c, where the
+"temporary files" may be extended-memory segments; if they are not freed,
+DOS will require a reboot to recover the memory.)  Thus, with these memory
+managers, it's a good idea to provide a signal handler that will trap any
+early exit from your program.  The handler should call either <a href="jpeglib.h.html#L1111">jpeg_abort</a>()
+or <a href="jpeglib.h.html#L1112">jpeg_destroy</a>() for any active JPEG objects.  A handler is not needed with
+jmemnobs.c, and shouldn't be necessary with jmemansi.c or jmemmac.c either,
+since the C library is supposed to take care of deleting files made with
+tmpfile().
+</pre>
+</div>
+</body>
+</html>

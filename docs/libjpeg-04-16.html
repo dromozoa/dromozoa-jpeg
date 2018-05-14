@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Library compile-time options</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Library compile-time options</h2>
+
+<pre>
+A number of compile-time options are available by modifying jmorecfg.h.
+
+The IJG code currently supports 8-bit to 12-bit sample data precision by
+defining BITS_IN_JSAMPLE as 8, 9, 10, 11, or 12.
+Note that a value larger than 8 causes JSAMPLE to be larger than a char,
+so it affects the surrounding application's image data.
+The sample applications cjpeg and djpeg can support deeper than 8-bit data
+only for PPM and GIF file formats; you must disable the other file formats
+to compile a 9-bit to 12-bit cjpeg or djpeg.  (install.txt has more
+information about that.)
+Run-time selection and conversion of data precision are currently not
+supported and may be added later.
+Exception:  The transcoding part (jpegtran) supports all settings in a
+single instance, since it operates on the level of DCT coefficients and
+not sample values.
+(If you need to include an 8-bit library and a 9-bit to 12-bit library for
+compression or decompression in a single application, you could probably do
+it by defining NEED_SHORT_EXTERNAL_NAMES for just one of the copies.  You'd
+have to access the 8-bit and the 9-bit to 12-bit copies from separate
+application source files.  This is untested ... if you try it, we'd like to
+hear whether it works!)
+
+Note that the standard Huffman tables are only valid for 8-bit data precision.
+If you selected more than 8-bit data precision, cjpeg uses arithmetic coding
+by default.  The Huffman encoder normally uses entropy optimization to
+compute usable tables for higher precision.  Otherwise, you'll have to
+supply different default Huffman tables.  You may also want to supply your
+own DCT quantization tables; the existing quality-scaling code has been
+developed for 8-bit use, and probably doesn't generate especially good tables
+for 9-bit to 12-bit.
+
+The maximum number of components (color channels) in the image is determined
+by MAX_COMPONENTS.  The JPEG standard allows up to 255 components, but we
+expect that few applications will need more than four or so.
+
+On machines with unusual data type sizes, you may be able to improve
+performance or reduce memory space by tweaking the various typedefs in
+jmorecfg.h.  In particular, on some RISC CPUs, access to arrays of "short"s
+is quite slow; consider trading memory for speed by making JCOEF, INT16, and
+UINT16 be "int" or "unsigned int".  UINT8 is also a candidate to become int.
+You probably don't want to make JSAMPLE be int unless you have lots of memory
+to burn.
+
+You can reduce the size of the library by compiling out various optional
+functions.  To do this, undefine xxx_SUPPORTED symbols as necessary.
+
+You can also save a few K by not having text error messages in the library;
+the standard error message table occupies about 5Kb.  This is particularly
+reasonable for embedded applications where there's no good way to display 
+a message anyway.  To do this, remove the creation of the message table
+(jpeg_std_message_table[]) from jerror.c, and alter format_message to do
+something reasonable without it.  You could output the numeric value of the
+message code number, for example.  If you do this, you can also save a couple
+more K by modifying the TRACEMSn() macros in jerror.h to expand to nothing;
+you don't need trace capability anyway, right?
+</pre>
+</div>
+</body>
+</html>
