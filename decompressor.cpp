@@ -78,7 +78,7 @@ namespace dromozoa {
       }
       JDIMENSION result = jpeg_read_scanlines(self->get(), &scanlines[0], max_lines);
       for (JDIMENSION i = 0; i < result; ++i) {
-        luaX_push(L, reinterpret_cast<const char*>(scanlines[i]), samples_per_row);
+        lua_pushlstring(L, reinterpret_cast<const char*>(scanlines[i]), samples_per_row);
       }
     }
 
