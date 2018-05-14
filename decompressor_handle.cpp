@@ -70,7 +70,7 @@ namespace dromozoa {
     }
 
     j_decompress_ptr get() {
-      return &info_;
+      return &cinfo_;
     }
 
   private:
@@ -126,7 +126,7 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         fill_input_buffer_.get_field(L);
-        if (lua_pcall(L, 0, 0, 0) == 0) {
+        if (lua_pcall(L, 0, 1, 0) == 0) {
           size_t bytes = 0;
           if (const char* ptr = lua_tolstring(L, -1, &bytes)) {
             buffer_.resize(bytes);

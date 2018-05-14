@@ -41,12 +41,40 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_set_output_message(lua_State* L) {
+      check_decompressor_handle(L, 1)->set_output_message(L, 2);
+      luaX_push_success(L);
+    }
+
+    void impl_set_fill_input_buffer(lua_State* L) {
+      check_decompressor_handle(L, 1)->set_fill_input_buffer(L, 2);
+      luaX_push_success(L);
+    }
+
     void impl_read_header(lua_State* L) {
-      boolean require_image = TRUE;
-      if (!lua_isnoneornil(L, 2) && !lua_toboolean(L, 2)) {
-        require_image = FALSE;
-      }
-      jpeg_read_header(check_decompressor(L, 1), require_image);
+      int result = jpeg_read_header(check_decompressor(L, 1), FALSE);
+      luaX_push(L, result);
+    }
+
+    void impl_start_decompress(lua_State* L) {
+      boolean result = jpeg_start_decompress(check_decompressor(L, 1));
+      luaX_push(L, static_cast<bool>(result));
+    }
+
+    void impl_get_output_width(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_width);
+    }
+
+    void impl_get_output_height(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_height);
+    }
+
+    void impl_get_out_color_components(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->out_color_components);
+    }
+
+    void impl_get_output_components(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_components);
     }
   }
 
@@ -61,7 +89,19 @@ namespace dromozoa {
 
       luaX_set_metafield(L, -1, "__call", impl_call);
       luaX_set_field(L, -1, "destroy", impl_destroy);
+      luaX_set_field(L, -1, "set_output_message", impl_set_output_message);
+      luaX_set_field(L, -1, "set_fill_input_buffer", impl_set_fill_input_buffer);
+      luaX_set_field(L, -1, "read_header", impl_read_header);
+      luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
+      luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
+      luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
+      luaX_set_field(L, -1, "get_out_color_components", impl_get_out_color_components);
+      luaX_set_field(L, -1, "get_output_components", impl_get_output_components);
     }
     luaX_set_field(L, -2, "decompressor");
+
+    luaX_set_field(L, -1, "JPEG_SUSPENDED", JPEG_SUSPENDED);
+    luaX_set_field(L, -1, "JPEG_HEADER_OK", JPEG_HEADER_OK);
+    luaX_set_field(L, -1, "JPEG_HEADER_TABLES_ONLY", JPEG_HEADER_TABLES_ONLY);
   }
 }
