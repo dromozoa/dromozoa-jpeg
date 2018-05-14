@@ -19,41 +19,33 @@ local jpeg = require "dromozoa.jpeg"
 
 local verbose = os.getenv "VERBOSE" == "1"
 
-local compressor = assert(jpeg.compressor(256))
-
-local out = assert(io.open("test.jpg", "wb"))
-assert(compressor:set_empty_output_buffer(function (data)
-  if verbose then
-    io.stderr:write("empty_output_buffer ", #data, "\n")
-  end
-  out:write(data)
+local decompressor = assert(jpeg.decompressor())
+assert(decompressor:set_fill_input_buffer(function (n)
+  return "\0\0"
 end))
+local result, message = decompressor:read_header()
+if verbose then
+  io.stderr:write(message, "\n")
+end
+assert(not result)
 
-local width = 32
-local height = 64
-
-assert(compressor:set_image_width(width))
-assert(compressor:set_image_height(height))
+local warning = 0
+local compressor = assert(jpeg.compressor())
+assert(compressor:set_output_message(function (message)
+  if verbose then
+    io.stderr:write(message, "\n")
+  end
+  warning = warning + 1
+end))
+assert(compressor:set_empty_output_buffer(function () end))
+assert(compressor:set_image_width(1))
+assert(compressor:set_image_height(2))
 assert(compressor:set_input_components(3))
 assert(compressor:set_in_color_space(jpeg.JCS_RGB))
 assert(compressor:set_defaults())
-
 assert(compressor:start_compress())
-for y = 1, height do
-  local row = {}
-  for x = 1, width do
-    row[x] = string.char(math.floor(x * 255 / width), math.floor(y * 255 / height), 255)
-  end
-  assert(compressor:write_scanlines(table.concat(row)) == 1)
-end
-if verbose then
-  io.stderr:write "before finish_compress\n"
-  io.stderr:flush()
-end
+assert(compressor:write_scanlines("\0\0\0"))
+assert(compressor:write_scanlines("\0\0\0"))
+assert(compressor:write_scanlines("\0\0\0"))
 assert(compressor:finish_compress())
-if verbose then
-  io.stderr:write "after finish_compress\n"
-  io.stderr:flush()
-end
-
-out:close()
+assert(warning == 1)

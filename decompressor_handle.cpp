@@ -58,7 +58,6 @@ namespace dromozoa {
       }
     }
 
-
     void set_fill_input_buffer(lua_State* L, int index) {
       if (lua_isnoneornil(L, index)) {
         luaX_reference<>().swap(fill_input_buffer_);
@@ -96,13 +95,7 @@ namespace dromozoa {
     }
 
     static void skip_input_data_callback(j_decompress_ptr cinfo, long num_bytes) {
-      size_t bytes = num_bytes;
-      while (bytes > cinfo->src->bytes_in_buffer) {
-        bytes -= cinfo->src->bytes_in_buffer;
-        (*cinfo->src->fill_input_buffer)(cinfo);
-      }
-      cinfo->src->next_input_byte += bytes;
-      cinfo->src->bytes_in_buffer -= bytes;
+      static_cast<decompressor_handle_impl*>(cinfo->client_data)->skip_input_data(num_bytes);
     }
 
     static void term_source_callback(j_decompress_ptr) {}
@@ -119,6 +112,16 @@ namespace dromozoa {
           error_exit(lua_tostring(L, -1));
         }
       }
+    }
+
+    void skip_input_data(long num_bytes) {
+      size_t bytes = num_bytes;
+      while (bytes > src_.bytes_in_buffer) {
+        bytes -= src_.bytes_in_buffer;
+        (*src_.fill_input_buffer)(&cinfo_);
+      }
+      src_.next_input_byte += bytes;
+      src_.bytes_in_buffer -= bytes;
     }
 
     boolean fill_input_buffer() {
