@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "common.hpp"
 
@@ -81,17 +82,25 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
-    void impl_set_row(lua_State* L) {
-      compressor_handle* self = check_compressor_handle(L, 1);
-      JDIMENSION height = self->get()->image_height;
-      JDIMENSION y = luaX_check_integer<JDIMENSION>(L, 2, 1, height) - 1;
-      size_t length = 0;
-      const char* ptr = luaL_checklstring(L, 3, &length);
-      size_t rowbytes = self->get()->image_width * self->get()->input_components;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, rowbytes)) {
-        memcpy(scanlines[y], ptr, std::min(rowbytes, length));
-        luaX_push_success(L);
+    void impl_set_colorspace(lua_State* L) {
+      J_COLOR_SPACE colorspace = luaX_check_enum<J_COLOR_SPACE>(L, 2);
+      jpeg_set_colorspace(check_compressor(L, 1), colorspace);
+      luaX_push_success(L);
+    }
+
+    void impl_default_colorspace(lua_State* L) {
+      jpeg_default_colorspace(check_compressor(L, 1));
+      luaX_push_success(L);
+    }
+
+    void impl_set_quality(lua_State* L) {
+      int quality = luaX_check_integer(L, 2, 0, 100);
+      boolean force_baseline = TRUE;
+      if (lua_isboolean(L, 3) && !lua_toboolean(L, 3)) {
+        force_baseline = FALSE;
       }
+      jpeg_set_quality(check_compressor(L, 1), quality, force_baseline);
+      luaX_push_success(L);
     }
 
     void impl_start_compress(lua_State* L) {
@@ -101,11 +110,18 @@ namespace dromozoa {
 
     void impl_write_scanlines(lua_State* L) {
       compressor_handle* self = check_compressor_handle(L, 1);
-      JDIMENSION height = self->get()->image_height;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->image_width * self->get()->input_components)) {
-        JDIMENSION result = jpeg_write_scanlines(self->get(), scanlines, height);
-        luaX_push(L, result);
+      JDIMENSION num_lines = lua_gettop(L) - 1;
+      size_t samples_per_row = self->get()->image_width * self->get()->input_components;
+      std::vector<JSAMPLE> storage(samples_per_row * num_lines);
+      std::vector<JSAMPROW> scanlines(num_lines);
+      for (JDIMENSION i = 0; i < num_lines; ++i) {
+        scanlines[i] = &storage[i * samples_per_row];
+        size_t length = 0;
+        if (const char* ptr = lua_tolstring(L, i + 2, &length)) {
+          memcpy(scanlines[i], ptr, std::min(samples_per_row, length));
+        }
       }
+      luaX_push(L, jpeg_write_scanlines(self->get(), &scanlines[0], num_lines));
     }
 
     void impl_finish_compress(lua_State* L) {
@@ -136,7 +152,9 @@ namespace dromozoa {
       luaX_set_field(L, -1, "set_input_components", impl_set_input_components);
       luaX_set_field(L, -1, "set_in_color_space", impl_set_in_color_space);
       luaX_set_field(L, -1, "set_defaults", impl_set_defaults);
-      luaX_set_field(L, -1, "set_row", impl_set_row);
+      luaX_set_field(L, -1, "set_colorspace", impl_set_colorspace);
+      luaX_set_field(L, -1, "default_colorspace", impl_default_colorspace);
+      luaX_set_field(L, -1, "set_quality", impl_set_quality);
       luaX_set_field(L, -1, "start_compress", impl_start_compress);
       luaX_set_field(L, -1, "write_scanlines", impl_write_scanlines);
       luaX_set_field(L, -1, "finish_compress", impl_finish_compress);

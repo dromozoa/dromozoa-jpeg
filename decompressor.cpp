@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-jpeg.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <vector>
+
 #include "common.hpp"
 
 namespace dromozoa {
@@ -53,27 +55,44 @@ namespace dromozoa {
     }
 
     void impl_read_header(lua_State* L) {
-      int result = jpeg_read_header(check_decompressor(L, 1), FALSE);
-      luaX_push(L, result);
+      boolean require_image = TRUE;
+      if (lua_isboolean(L, 2) && !lua_toboolean(L, 2)) {
+        require_image = FALSE;
+      }
+      luaX_push(L, jpeg_read_header(check_decompressor(L, 1), require_image));
     }
 
     void impl_start_decompress(lua_State* L) {
-      boolean result = jpeg_start_decompress(check_decompressor(L, 1));
-      luaX_push(L, static_cast<bool>(result));
+      luaX_push<bool>(L, jpeg_start_decompress(check_decompressor(L, 1)));
     }
 
     void impl_read_scanlines(lua_State* L) {
       decompressor_handle* self = check_decompressor_handle(L, 1);
       JDIMENSION height = self->get()->output_height;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->output_width * self->get()->output_components)) {
-        JDIMENSION result = jpeg_read_scanlines(self->get(), scanlines, height);
-        luaX_push(L, result);
+      JDIMENSION max_lines = luaX_opt_integer<JDIMENSION>(L, 2, 1, 1, height);
+      size_t samples_per_row = self->get()->output_width * self->get()->out_color_components;
+      std::vector<JSAMPLE> storage(samples_per_row * max_lines);
+      std::vector<JSAMPROW> scanlines(max_lines);
+      for (JDIMENSION i = 0; i < max_lines; ++i) {
+        scanlines[i] = &storage[i * samples_per_row];
+      }
+      JDIMENSION result = jpeg_read_scanlines(self->get(), &scanlines[0], max_lines);
+      for (JDIMENSION i = 0; i < result; ++i) {
+        luaX_push(L, reinterpret_cast<const char*>(scanlines[i]), samples_per_row);
       }
     }
 
     void impl_finish_decompress(lua_State* L) {
-      boolean result = jpeg_finish_decompress(check_decompressor(L, 1));
-      luaX_push(L, static_cast<bool>(result));
+      luaX_push<bool>(L, jpeg_finish_decompress(check_decompressor(L, 1)));
+    }
+
+    void impl_set_out_color_space(lua_State* L) {
+      check_decompressor(L, 1)->out_color_space = luaX_check_enum<J_COLOR_SPACE>(L, 2);
+      luaX_push_success(L);
+    }
+
+    void impl_get_output_scanline(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_scanline + 1);
     }
 
     void impl_get_output_width(lua_State* L) {
@@ -90,14 +109,6 @@ namespace dromozoa {
 
     void impl_get_out_color_components(lua_State* L) {
       luaX_push(L, check_decompressor(L, 1)->out_color_components);
-    }
-
-    void impl_get_output_components(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_components);
-    }
-
-    void impl_get_output_scanline(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_scanline + 1);
     }
   }
 
@@ -118,12 +129,12 @@ namespace dromozoa {
       luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
       luaX_set_field(L, -1, "read_scanlines", impl_read_scanlines);
       luaX_set_field(L, -1, "finish_decompress", impl_finish_decompress);
+      luaX_set_field(L, -1, "set_out_color_space", impl_set_out_color_space);
+      luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
       luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
       luaX_set_field(L, -1, "get_out_color_space", impl_get_out_color_space);
       luaX_set_field(L, -1, "get_out_color_components", impl_get_out_color_components);
-      luaX_set_field(L, -1, "get_output_components", impl_get_output_components);
-      luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
     }
     luaX_set_field(L, -2, "decompressor");
   }

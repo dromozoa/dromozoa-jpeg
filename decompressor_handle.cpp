@@ -17,7 +17,6 @@
 
 #include <string.h>
 
-#include <algorithm>
 #include <vector>
 
 #include "common.hpp"
@@ -74,23 +73,27 @@ namespace dromozoa {
       return &cinfo_;
     }
 
-    JSAMPARRAY prepare_rows(JDIMENSION height, size_t rowbytes) {
-      size_t storage_size = height * rowbytes;
-      if (row_storage_.size() != storage_size || row_pointers_.size() != height) {
+    JSAMPARRAY prepare_scanlines(JDIMENSION height, size_t samples_per_row) {
+      size_t storage_size = height * samples_per_row;
+      if (storage_.size() != storage_size || scanlines_.size() != height) {
         std::vector<JSAMPLE> row_storage(storage_size);
-        std::vector<JSAMPROW> row_pointers(height);
-        row_storage.swap(row_storage_);
-        row_pointers.swap(row_pointers_);
-        if (storage_size > 0) {
-          for (size_t y = 0; y < row_pointers_.size(); ++y) {
-            row_pointers_[y] = &row_storage_[y * rowbytes];
+        std::vector<JSAMPROW> scanlines(height);
+        row_storage.swap(storage_);
+        scanlines.swap(scanlines_);
+        if (storage_size == 0) {
+          return 0;
+        } else {
+          for (size_t y = 0; y < scanlines_.size(); ++y) {
+            scanlines_[y] = &storage_[y * samples_per_row];
           }
+          return &scanlines_[0];
         }
-      }
-      if (storage_size > 0) {
-        return &row_pointers_[0];
       } else {
-        return 0;
+        if (storage_size == 0) {
+          return 0;
+        } else {
+          return &scanlines_[0];
+        }
       }
     }
 
@@ -102,8 +105,8 @@ namespace dromozoa {
     luaX_reference<> output_message_;
     luaX_reference<> fill_input_buffer_;
     std::vector<JOCTET> buffer_;
-    std::vector<JSAMPLE> row_storage_;
-    std::vector<JSAMPROW> row_pointers_;
+    std::vector<JSAMPLE> storage_;
+    std::vector<JSAMPROW> scanlines_;
 
     decompressor_handle_impl(const decompressor_handle_impl&);
     decompressor_handle_impl& operator=(const decompressor_handle_impl&);
@@ -153,21 +156,19 @@ namespace dromozoa {
         if (lua_pcall(L, 1, 1, 0) == 0) {
           size_t bytes = 0;
           if (const char* ptr = lua_tolstring(L, -1, &bytes)) {
-            memcpy(&buffer_[0], ptr, std::min(bytes, buffer_.size()));
+            if (buffer_.size() < bytes) {
+              buffer_.resize(bytes);
+            }
+            memcpy(&buffer_[0], ptr, bytes);
             src_.next_input_byte = &buffer_[0];
             src_.bytes_in_buffer = bytes;
             return TRUE;
           } else {
-            buffer_.resize(2);
-            buffer_[0] = 0xFF;
-            buffer_[1] = JPEG_EOI;
-            src_.next_input_byte = &buffer_[0];
-            src_.bytes_in_buffer = 2;
-            return TRUE;
+            return FALSE;
           }
         } else {
           error_exit(lua_tostring(L, -1));
-          return FALSE;
+          return TRUE; // unreachable
         }
       }
     }
@@ -197,7 +198,7 @@ namespace dromozoa {
     return impl_->get();
   }
 
-  JSAMPARRAY decompressor_handle::prepare_rows(JDIMENSION height, size_t rowbytes) {
-    return impl_->prepare_rows(height, rowbytes);
+  JSAMPARRAY decompressor_handle::prepare_scanlines(JDIMENSION height, size_t samples_per_row) {
+    return impl_->prepare_scanlines(height, samples_per_row);
   }
 }
