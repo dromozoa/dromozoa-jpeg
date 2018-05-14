@@ -62,8 +62,33 @@ namespace dromozoa {
       luaX_push(L, jpeg_read_header(check_decompressor(L, 1), require_image));
     }
 
+    void impl_set_out_color_space(lua_State* L) {
+      check_decompressor(L, 1)->out_color_space = luaX_check_enum<J_COLOR_SPACE>(L, 2);
+      luaX_push_success(L);
+    }
+
     void impl_start_decompress(lua_State* L) {
       luaX_push<bool>(L, jpeg_start_decompress(check_decompressor(L, 1)));
+    }
+
+    void impl_get_output_width(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_width);
+    }
+
+    void impl_get_output_height(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_height);
+    }
+
+    void impl_get_out_color_space(lua_State* L) {
+      luaX_push<int>(L, check_decompressor(L, 1)->out_color_space);
+    }
+
+    void impl_get_out_color_components(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->out_color_components);
+    }
+
+    void impl_get_output_scanline(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_scanline + 1);
     }
 
     void impl_read_scanlines(lua_State* L) {
@@ -85,31 +110,6 @@ namespace dromozoa {
     void impl_finish_decompress(lua_State* L) {
       luaX_push<bool>(L, jpeg_finish_decompress(check_decompressor(L, 1)));
     }
-
-    void impl_set_out_color_space(lua_State* L) {
-      check_decompressor(L, 1)->out_color_space = luaX_check_enum<J_COLOR_SPACE>(L, 2);
-      luaX_push_success(L);
-    }
-
-    void impl_get_output_scanline(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_scanline + 1);
-    }
-
-    void impl_get_output_width(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_width);
-    }
-
-    void impl_get_output_height(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_height);
-    }
-
-    void impl_get_out_color_space(lua_State* L) {
-      luaX_push<int>(L, check_decompressor(L, 1)->out_color_space);
-    }
-
-    void impl_get_out_color_components(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->out_color_components);
-    }
   }
 
   void initialize_decompressor(lua_State* L) {
@@ -126,15 +126,15 @@ namespace dromozoa {
       luaX_set_field(L, -1, "set_output_message", impl_set_output_message);
       luaX_set_field(L, -1, "set_fill_input_buffer", impl_set_fill_input_buffer);
       luaX_set_field(L, -1, "read_header", impl_read_header);
-      luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
-      luaX_set_field(L, -1, "read_scanlines", impl_read_scanlines);
-      luaX_set_field(L, -1, "finish_decompress", impl_finish_decompress);
       luaX_set_field(L, -1, "set_out_color_space", impl_set_out_color_space);
-      luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
+      luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
       luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
       luaX_set_field(L, -1, "get_out_color_space", impl_get_out_color_space);
       luaX_set_field(L, -1, "get_out_color_components", impl_get_out_color_components);
+      luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
+      luaX_set_field(L, -1, "read_scanlines", impl_read_scanlines);
+      luaX_set_field(L, -1, "finish_decompress", impl_finish_decompress);
     }
     luaX_set_field(L, -2, "decompressor");
   }

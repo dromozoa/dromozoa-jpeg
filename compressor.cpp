@@ -108,6 +108,10 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_get_next_scanline(lua_State* L) {
+      luaX_push(L, check_compressor(L, 1)->next_scanline + 1);
+    }
+
     void impl_write_scanlines(lua_State* L) {
       compressor_handle* self = check_compressor_handle(L, 1);
       JDIMENSION num_lines = lua_gettop(L) - 1;
@@ -127,10 +131,6 @@ namespace dromozoa {
     void impl_finish_compress(lua_State* L) {
       jpeg_finish_compress(check_compressor(L, 1));
       luaX_push_success(L);
-    }
-
-    void impl_get_next_scanline(lua_State* L) {
-      luaX_push(L, check_compressor(L, 1)->next_scanline + 1);
     }
   }
 
@@ -156,9 +156,9 @@ namespace dromozoa {
       luaX_set_field(L, -1, "default_colorspace", impl_default_colorspace);
       luaX_set_field(L, -1, "set_quality", impl_set_quality);
       luaX_set_field(L, -1, "start_compress", impl_start_compress);
+      luaX_set_field(L, -1, "get_next_scanline", impl_get_next_scanline);
       luaX_set_field(L, -1, "write_scanlines", impl_write_scanlines);
       luaX_set_field(L, -1, "finish_compress", impl_finish_compress);
-      luaX_set_field(L, -1, "get_next_scanline", impl_get_next_scanline);
     }
     luaX_set_field(L, -2, "compressor");
   }
