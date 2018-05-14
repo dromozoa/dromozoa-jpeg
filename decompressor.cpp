@@ -67,7 +67,7 @@ namespace dromozoa {
     void impl_read_scanlines(lua_State* L) {
       decompressor_handle* self = check_decompressor_handle(L, 1);
       JDIMENSION height = self->get()->output_height;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->output_width * self->get()->output_components)) {
+      if (JSAMPARRAY scanlines = self->prepare_scanlines(height, self->get()->output_width * self->get()->output_components)) {
         luaX_push(L, jpeg_read_scanlines(self->get(), scanlines, height));
       } else {
         error_exit("scanlines not prepared");
