@@ -69,6 +69,10 @@ namespace dromozoa {
       luaX_push(L, check_decompressor(L, 1)->output_height);
     }
 
+    void impl_get_out_color_space(lua_State* L) {
+      luaX_push<int>(L, check_decompressor(L, 1)->out_color_space);
+    }
+
     void impl_get_out_color_components(lua_State* L) {
       luaX_push(L, check_decompressor(L, 1)->out_color_components);
     }
@@ -95,6 +99,7 @@ namespace dromozoa {
       luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
       luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
+      luaX_set_field(L, -1, "get_out_color_space", impl_get_out_color_space);
       luaX_set_field(L, -1, "get_out_color_components", impl_get_out_color_components);
       luaX_set_field(L, -1, "get_output_components", impl_get_output_components);
     }

@@ -24,6 +24,7 @@ OBJS = \
 	decompressor.o \
 	decompressor_handle.o \
 	error.o \
+	main.o \
 	module.o
 TARGET = jpeg.so
 

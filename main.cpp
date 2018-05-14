@@ -18,17 +18,14 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  void initialize_decompressor(lua_State* L);
-  void initialize_main(lua_State* L);
-
-  void initialize(lua_State* L) {
-    initialize_decompressor(L);
-    initialize_main(L);
+  void initialize_main(lua_State* L) {
+    luaX_set_field<int>(L, -1, "JCS_UNKNOWN", JCS_UNKNOWN);
+    luaX_set_field<int>(L, -1, "JCS_GRAYSCALE", JCS_GRAYSCALE);
+    luaX_set_field<int>(L, -1, "JCS_RGB", JCS_RGB);
+    luaX_set_field<int>(L, -1, "JCS_YCbCr", JCS_YCbCr);
+    luaX_set_field<int>(L, -1, "JCS_CMYK", JCS_CMYK);
+    luaX_set_field<int>(L, -1, "JCS_YCCK", JCS_YCCK);
+    luaX_set_field<int>(L, -1, "JCS_BG_RGB", JCS_BG_RGB);
+    luaX_set_field<int>(L, -1, "JCS_BG_YCC", JCS_BG_YCC);
   }
-}
-
-extern "C" int luaopen_dromozoa_jpeg(lua_State* L) {
-  lua_newtable(L);
-  dromozoa::initialize(L);
-  return 1;
 }
