@@ -53,27 +53,29 @@ namespace dromozoa {
     }
 
     void impl_read_header(lua_State* L) {
-      int result = jpeg_read_header(check_decompressor(L, 1), FALSE);
-      luaX_push(L, result);
+      boolean require_image = TRUE;
+      if (lua_isboolean(L, 2) && !lua_toboolean(L, 2)) {
+        require_image = FALSE;
+      }
+      luaX_push(L, jpeg_read_header(check_decompressor(L, 1), require_image));
     }
 
     void impl_start_decompress(lua_State* L) {
-      boolean result = jpeg_start_decompress(check_decompressor(L, 1));
-      luaX_push(L, static_cast<bool>(result));
+      luaX_push<bool>(L, jpeg_start_decompress(check_decompressor(L, 1)));
     }
 
     void impl_read_scanlines(lua_State* L) {
       decompressor_handle* self = check_decompressor_handle(L, 1);
       JDIMENSION height = self->get()->output_height;
       if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->output_width * self->get()->output_components)) {
-        JDIMENSION result = jpeg_read_scanlines(self->get(), scanlines, height);
-        luaX_push(L, result);
+        luaX_push(L, jpeg_read_scanlines(self->get(), scanlines, height));
+      } else {
+        error_exit("scanlines not prepared");
       }
     }
 
     void impl_finish_decompress(lua_State* L) {
-      boolean result = jpeg_finish_decompress(check_decompressor(L, 1));
-      luaX_push(L, static_cast<bool>(result));
+      luaX_push<bool>(L, jpeg_finish_decompress(check_decompressor(L, 1)));
     }
 
     void impl_get_output_width(lua_State* L) {
