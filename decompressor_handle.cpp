@@ -41,6 +41,10 @@ namespace dromozoa {
     }
 
     ~decompressor_handle_impl() {
+      destroy();
+    }
+
+    void destroy() {
       jpeg_destroy_decompress(&cinfo_);
     }
 
@@ -63,6 +67,10 @@ namespace dromozoa {
         luaX_reference<>(L, index).swap(fill_input_buffer_);
         cinfo_.src = &src_;
       }
+    }
+
+    j_decompress_ptr get() {
+      return &info_;
     }
 
   private:
@@ -150,11 +158,19 @@ namespace dromozoa {
 
   decompressor_handle::~decompressor_handle() {}
 
+  void decompressor_handle::destroy() {
+    impl_->destroy();
+  }
+
   void decompressor_handle::set_output_message(lua_State* L, int index) {
     impl_->set_output_message(L, index);
   }
 
   void decompressor_handle::set_fill_input_buffer(lua_State* L, int index) {
     impl_->set_fill_input_buffer(L, index);
+  }
+
+  j_decompress_ptr decompressor_handle::get() {
+    return impl_->get();
   }
 }

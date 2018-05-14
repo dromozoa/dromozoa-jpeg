@@ -36,8 +36,10 @@ namespace dromozoa {
     static decompressor_handle_impl* create();
     explicit decompressor_handle(decompressor_handle_impl* impl);
     ~decompressor_handle();
+    void destroy();
     void set_output_message(lua_State* L, int index);
     void set_fill_input_buffer(lua_State* L, int index);
+    j_decompress_ptr get();
   private:
     scoped_ptr<decompressor_handle_impl> impl_;
     decompressor_handle(const decompressor_handle&);
