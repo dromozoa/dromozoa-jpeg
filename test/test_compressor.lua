@@ -40,8 +40,8 @@ assert(compressor:set_defaults())
 
 for y = 1, height do
   local row = {}
-  local x = 1, width do
-    row[#row + 1] = string.char(math.floor(x * 255 / width), math.floor(y * 255 / height), 255)
+  for x = 1, width do
+    row[x] = string.char(math.floor(x * 255 / width), math.floor(y * 255 / height), 255)
   end
   compressor:set_row(y, table.concat(row))
 end

@@ -146,7 +146,7 @@ namespace dromozoa {
       {
         empty_output_buffer_.get_field(L);
         lua_pushlstring(L, reinterpret_cast<const char*>(&buffer_[0]), buffer_.size() - dest_.free_in_buffer);
-        if (lua_pcall(L, 1, 0, 0) != 0) {
+        if (lua_pcall(L, 1, 0, 0) == 0) {
           dest_.next_output_byte = &buffer_[0];
           dest_.free_in_buffer = buffer_.size();
           return TRUE;
