@@ -46,6 +46,24 @@ namespace dromozoa {
     decompressor_handle(const decompressor_handle&);
     decompressor_handle& operator=(const decompressor_handle&);
   };
+
+  class compressor_handle_impl;
+
+  class compressor_handle {
+  public:
+    static compressor_handle_impl* create();
+    explicit compressor_handle(compressor_handle_impl* impl);
+    ~compressor_handle();
+    void destroy();
+    void set_output_message(lua_State* L, int index);
+    void set_empty_output_buffer(lua_State* L, int index);
+    j_compress_ptr get();
+    JSAMPARRAY prepare_rows(JDIMENSION height, size_t rowbytes);
+  private:
+    scoped_ptr<compressor_handle_impl> impl_;
+    compressor_handle(const compressor_handle&);
+    compressor_handle& operator=(const compressor_handle&);
+  };
 }
 
 #endif
