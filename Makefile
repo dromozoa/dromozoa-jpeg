@@ -21,6 +21,7 @@ LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -ljpeg -ldl
 
 OBJS = \
+	compressor.o \
 	compressor_handle.o \
 	decompressor.o \
 	decompressor_handle.o \

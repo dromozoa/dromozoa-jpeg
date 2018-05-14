@@ -39,7 +39,7 @@ assert(decompressor:get_out_color_components() == 3)
 assert(decompressor:get_output_components() == 3)
 
 while assert(decompressor:get_output_scanline()) <= 2318 do
-  local result = decompressor:read_scanlines()
+  local result = assert(decompressor:read_scanlines())
   if verbose then
     io.stderr:write("read_scanlines ", result, "\n")
   end

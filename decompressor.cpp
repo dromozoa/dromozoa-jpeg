@@ -125,9 +125,5 @@ namespace dromozoa {
       luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
     }
     luaX_set_field(L, -2, "decompressor");
-
-    luaX_set_field(L, -1, "JPEG_SUSPENDED", JPEG_SUSPENDED);
-    luaX_set_field(L, -1, "JPEG_HEADER_OK", JPEG_HEADER_OK);
-    luaX_set_field(L, -1, "JPEG_HEADER_TABLES_ONLY", JPEG_HEADER_TABLES_ONLY);
   }
 }

@@ -27,5 +27,9 @@ namespace dromozoa {
     luaX_set_field<int>(L, -1, "JCS_YCCK", JCS_YCCK);
     luaX_set_field<int>(L, -1, "JCS_BG_RGB", JCS_BG_RGB);
     luaX_set_field<int>(L, -1, "JCS_BG_YCC", JCS_BG_YCC);
+
+    luaX_set_field(L, -1, "JPEG_SUSPENDED", JPEG_SUSPENDED);
+    luaX_set_field(L, -1, "JPEG_HEADER_OK", JPEG_HEADER_OK);
+    luaX_set_field(L, -1, "JPEG_HEADER_TABLES_ONLY", JPEG_HEADER_TABLES_ONLY);
   }
 }

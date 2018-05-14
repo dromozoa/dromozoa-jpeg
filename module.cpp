@@ -18,10 +18,12 @@
 #include "common.hpp"
 
 namespace dromozoa {
+  void initialize_compressor(lua_State* L);
   void initialize_decompressor(lua_State* L);
   void initialize_main(lua_State* L);
 
   void initialize(lua_State* L) {
+    initialize_compressor(L);
     initialize_decompressor(L);
     initialize_main(L);
   }
