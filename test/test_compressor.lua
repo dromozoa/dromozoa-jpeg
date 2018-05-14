@@ -52,6 +52,7 @@ while assert(compressor:get_next_scanline()) <= height do
   if verbose then
     io.stderr:write("write_scanlines ", result, "\n")
   end
+  assert(result > 0)
 end
 
 assert(compressor:finish_compress())
