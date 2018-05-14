@@ -17,51 +17,39 @@
 
 local jpeg = require "dromozoa.jpeg"
 
-local verbose = os.getenv "VERBOSE" == "1"
-
-local compressor = assert(jpeg.compressor())
 local decompressor = assert(jpeg.decompressor())
-
 local handle = assert(io.open("docs/l_hires.jpg", "rb"))
 assert(decompressor:set_fill_input_buffer(function (n)
   return handle:read(n)
 end))
-
 assert(decompressor:read_header() == jpeg.JPEG_HEADER_OK)
 assert(decompressor:set_out_color_space(jpeg.JCS_GRAYSCALE))
 assert(decompressor:start_decompress())
-
+assert(decompressor:get_output_width() == 1084)
+assert(decompressor:get_output_height() == 2318)
+assert(decompressor:get_out_color_space() == jpeg.JCS_GRAYSCALE)
+assert(decompressor:get_out_color_components() == 1)
 local height = assert(decompressor:get_output_height())
+local rows = {}
 while decompressor:get_output_scanline() <= height do
-  assert(decompressor:read_scanlines() > 0)
+  rows[#rows + 1] = assert(decompressor:read_scanlines())
 end
 assert(decompressor:finish_decompress())
 handle:close()
 
-local rows = assert(decompressor:get_rows())
-assert(#rows == 2318)
-for i = 1, #rows do
-  assert(#rows[i] == 1084)
-  if verbose then
-    io.stderr:write(rows[i])
-  end
-end
-
-local out = assert(io.open("test.jpg", "w"))
+local compressor = assert(jpeg.compressor())
+local out = assert(io.open("test.jpg", "wb"))
 assert(compressor:set_empty_output_buffer(function (data)
   out:write(data)
 end))
-
 assert(compressor:set_image_width(decompressor:get_output_width()))
 assert(compressor:set_image_height(height))
 assert(compressor:set_input_components(decompressor:get_out_color_components()))
 assert(compressor:set_in_color_space(decompressor:get_out_color_space()))
 assert(compressor:set_defaults())
-assert(compressor:set_rows(rows))
 assert(compressor:start_compress())
-while compressor:get_next_scanline() <= height do
-  assert(compressor:write_scanlines() > 0)
+for y = 1, height do
+  assert(compressor:write_scanlines(rows[y]))
 end
-
 assert(compressor:finish_compress())
 out:close()

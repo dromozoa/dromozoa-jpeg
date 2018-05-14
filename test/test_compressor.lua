@@ -21,12 +21,12 @@ local verbose = os.getenv "VERBOSE" == "1"
 
 local compressor = assert(jpeg.compressor(256))
 
-local handle = assert(io.open("test.jpg", "wb"))
+local out = assert(io.open("test.jpg", "wb"))
 assert(compressor:set_empty_output_buffer(function (data)
   if verbose then
     io.stderr:write("empty_output_buffer ", #data, "\n")
   end
-  handle:write(data)
+  out:write(data)
 end))
 
 local width = 32
@@ -38,21 +38,23 @@ assert(compressor:set_input_components(3))
 assert(compressor:set_in_color_space(jpeg.JCS_RGB))
 assert(compressor:set_defaults())
 
+assert(compressor:start_compress())
 for y = 1, height do
   local row = {}
   for x = 1, width do
     row[x] = string.char(math.floor(x * 255 / width), math.floor(y * 255 / height), 255)
   end
-  compressor:set_row(y, table.concat(row))
+  assert(compressor:write_scanlines(table.concat(row)) == 1)
 end
-
-assert(compressor:start_compress())
-while assert(compressor:get_next_scanline()) <= height do
-  local result = assert(compressor:write_scanlines())
-  if verbose then
-    io.stderr:write("write_scanlines ", result, "\n")
-  end
-  assert(result > 0)
+if verbose then
+  io.stderr:write "before finish_compress\n"
+  io.stderr:flush()
 end
-
 assert(compressor:finish_compress())
+if verbose then
+  io.stderr:write "after finish_compress\n"
+  io.stderr:flush()
+end
+
+
+out:close()

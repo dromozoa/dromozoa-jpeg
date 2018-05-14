@@ -148,7 +148,7 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         empty_output_buffer_.get_field(L);
-        lua_pushlstring(L, reinterpret_cast<const char*>(&buffer_[0]), buffer_.size() - dest_.free_in_buffer);
+        lua_pushlstring(L, reinterpret_cast<const char*>(&buffer_[0]), buffer_.size());
         if (lua_pcall(L, 1, 0, 0) == 0) {
           if (lua_isboolean(L, -1) && !lua_toboolean(L, -1)) {
             return FALSE;
@@ -166,8 +166,18 @@ namespace dromozoa {
 
     void term_destination() {
       if (buffer_.size() > dest_.free_in_buffer) {
-        if (!empty_output_buffer()) {
-          ERREXIT(&cinfo_, JERR_CANT_SUSPEND);
+        lua_State* L = empty_output_buffer_.state();
+        luaX_top_saver save_top(L);
+        {
+          empty_output_buffer_.get_field(L);
+          lua_pushlstring(L, reinterpret_cast<const char*>(&buffer_[0]), buffer_.size() - dest_.free_in_buffer);
+          if (lua_pcall(L, 1, 0, 0) == 0) {
+            if (lua_isboolean(L, -1) && !lua_toboolean(L, -1)) {
+              ERREXIT(&cinfo_, JERR_CANT_SUSPEND);
+            }
+          } else {
+            error_exit(lua_tostring(L, -1));
+          }
         }
       }
     }

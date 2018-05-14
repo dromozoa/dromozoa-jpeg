@@ -41,9 +41,8 @@ assert(decompressor:get_out_color_components() == 1)
 while assert(decompressor:get_output_scanline()) <= 2318 do
   local result = assert(decompressor:read_scanlines())
   if verbose then
-    io.stderr:write("read_scanlines ", result, "\n")
+    io.stderr:write("read_scanlines ", #result, "\n")
   end
-  assert(result > 0)
 end
 
 assert(decompressor:finish_decompress())
