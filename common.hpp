@@ -26,6 +26,10 @@
 
 #include <dromozoa/bind.hpp>
 
+#if BITS_IN_JSAMPLE != 8
+#error unexpected BITS_IN_JSAMPLE
+#endif
+
 namespace dromozoa {
   void error_exit(const char* what);
   void error_exit(j_common_ptr cinfo);

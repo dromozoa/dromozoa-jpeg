@@ -31,12 +31,12 @@ assert(decompressor:set_fill_input_buffer(function (n)
 end))
 
 assert(decompressor:read_header() == jpeg.JPEG_HEADER_OK)
+assert(decompressor:set_out_color_space(jpeg.JCS_GRAYSCALE))
 assert(decompressor:start_decompress())
 assert(decompressor:get_output_width() == 1084)
 assert(decompressor:get_output_height() == 2318)
-assert(decompressor:get_out_color_space() == jpeg.JCS_RGB)
-assert(decompressor:get_out_color_components() == 3)
-assert(decompressor:get_output_components() == 3)
+assert(decompressor:get_out_color_space() == jpeg.JCS_GRAYSCALE)
+assert(decompressor:get_out_color_components() == 1)
 
 while assert(decompressor:get_output_scanline()) <= 2318 do
   local result = assert(decompressor:read_scanlines())
