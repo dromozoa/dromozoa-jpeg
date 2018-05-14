@@ -88,9 +88,11 @@ namespace dromozoa {
       size_t length = 0;
       const char* ptr = luaL_checklstring(L, 3, &length);
       size_t rowbytes = self->get()->image_width * self->get()->input_components;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, rowbytes)) {
+      if (JSAMPARRAY scanlines = self->prepare_scanlines(height, rowbytes)) {
         memcpy(scanlines[y], ptr, std::min(rowbytes, length));
         luaX_push_success(L);
+      } else {
+        error_exit("scanlines not prepared");
       }
     }
 
@@ -102,9 +104,11 @@ namespace dromozoa {
     void impl_write_scanlines(lua_State* L) {
       compressor_handle* self = check_compressor_handle(L, 1);
       JDIMENSION height = self->get()->image_height;
-      if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->image_width * self->get()->input_components)) {
+      if (JSAMPARRAY scanlines = self->prepare_scanlines(height, self->get()->image_width * self->get()->input_components)) {
         JDIMENSION result = jpeg_write_scanlines(self->get(), scanlines, height);
         luaX_push(L, result);
+      } else {
+        error_exit("scanlines not prepared");
       }
     }
 

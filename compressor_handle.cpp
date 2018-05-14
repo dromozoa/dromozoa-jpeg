@@ -70,26 +70,26 @@ namespace dromozoa {
       return &cinfo_;
     }
 
-    JSAMPARRAY prepare_rows(JDIMENSION height, size_t samples_per_row) {
+    JSAMPARRAY prepare_scanlines(JDIMENSION height, size_t samples_per_row) {
       size_t storage_size = height * samples_per_row;
-      if (row_storage_.size() != storage_size || row_pointers_.size() != height) {
-        std::vector<JSAMPLE> row_storage(storage_size);
-        std::vector<JSAMPROW> row_pointers(height);
-        row_storage.swap(row_storage_);
-        row_pointers.swap(row_pointers_);
+      if (storage_.size() != storage_size || scanlines_.size() != height) {
+        std::vector<JSAMPLE> storage(storage_size);
+        std::vector<JSAMPROW> scanlines(height);
+        storage.swap(storage_);
+        scanlines.swap(scanlines_);
         if (storage_size == 0) {
           return 0;
         } else {
-          for (size_t y = 0; y < row_pointers_.size(); ++y) {
-            row_pointers_[y] = &row_storage_[y * samples_per_row];
+          for (size_t y = 0; y < scanlines_.size(); ++y) {
+            scanlines_[y] = &storage_[y * samples_per_row];
           }
-          return &row_pointers_[0];
+          return &scanlines_[0];
         }
       } else {
         if (storage_size == 0) {
           return 0;
         } else {
-          return &row_pointers_[0];
+          return &scanlines_[0];
         }
       }
     }
@@ -102,8 +102,8 @@ namespace dromozoa {
     luaX_reference<> output_message_;
     luaX_reference<> empty_output_buffer_;
     std::vector<JOCTET> buffer_;
-    std::vector<JSAMPLE> row_storage_;
-    std::vector<JSAMPROW> row_pointers_;
+    std::vector<JSAMPLE> storage_;
+    std::vector<JSAMPROW> scanlines_;
 
     compressor_handle_impl(const compressor_handle_impl&);
     compressor_handle_impl& operator=(const compressor_handle_impl&);
@@ -197,7 +197,7 @@ namespace dromozoa {
     return impl_->get();
   }
 
-  JSAMPARRAY compressor_handle::prepare_rows(JDIMENSION height, size_t samples_per_row) {
-    return impl_->prepare_rows(height, samples_per_row);
+  JSAMPARRAY compressor_handle::prepare_scanlines(JDIMENSION height, size_t samples_per_row) {
+    return impl_->prepare_scanlines(height, samples_per_row);
   }
 }
