@@ -96,7 +96,7 @@ namespace dromozoa {
     }
 
     void impl_get_output_scanline(lua_State* L) {
-      luaX_push(L, check_decompressor(L, 1)->output_scanline);
+      luaX_push(L, check_decompressor(L, 1)->output_scanline + 1);
     }
   }
 

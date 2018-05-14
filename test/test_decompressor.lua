@@ -38,14 +38,7 @@ assert(decompressor:get_out_color_space() == jpeg.JCS_RGB)
 assert(decompressor:get_out_color_components() == 3)
 assert(decompressor:get_output_components() == 3)
 
-while true do
-  local scanline = assert(decompressor:get_output_scanline())
-  if verbose then
-    io.stderr:write("scanline ", scanline, "\n")
-  end
-  if scanline >= 2318 then
-    break
-  end
+while assert(decompressor:get_output_scanline()) <= 2318 do
   local result = decompressor:read_scanlines()
   if verbose then
     io.stderr:write("read_scanlines ", result, "\n")
