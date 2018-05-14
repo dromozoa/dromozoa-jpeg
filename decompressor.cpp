@@ -116,10 +116,12 @@ namespace dromozoa {
       luaX_set_field(L, -1, "destroy", impl_destroy);
       luaX_set_field(L, -1, "set_output_message", impl_set_output_message);
       luaX_set_field(L, -1, "set_fill_input_buffer", impl_set_fill_input_buffer);
+
       luaX_set_field(L, -1, "read_header", impl_read_header);
       luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
       luaX_set_field(L, -1, "read_scanlines", impl_read_scanlines);
       luaX_set_field(L, -1, "finish_decompress", impl_finish_decompress);
+
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
       luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
       luaX_set_field(L, -1, "get_out_color_space", impl_get_out_color_space);
