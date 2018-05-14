@@ -45,7 +45,6 @@ namespace dromozoa {
     void set_output_message(lua_State* L, int index);
     void set_fill_input_buffer(lua_State* L, int index);
     j_decompress_ptr get();
-    JSAMPARRAY prepare_scanlines(JDIMENSION height, size_t samples_per_row);
   private:
     scoped_ptr<decompressor_handle_impl> impl_;
     decompressor_handle(const decompressor_handle&);
@@ -63,7 +62,6 @@ namespace dromozoa {
     void set_output_message(lua_State* L, int index);
     void set_empty_output_buffer(lua_State* L, int index);
     j_compress_ptr get();
-    JSAMPARRAY prepare_scanlines(JDIMENSION height, size_t samples_per_row);
   private:
     scoped_ptr<compressor_handle_impl> impl_;
     compressor_handle(const compressor_handle&);
