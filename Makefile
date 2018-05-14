@@ -22,6 +22,7 @@ LDLIBS += -ljpeg -ldl
 
 OBJS = \
 	decompressor_handle.o \
+	error.o \
 	module.o
 TARGET = jpeg.so
 

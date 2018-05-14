@@ -15,34 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-jpeg.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_COMMON_HPP
-#define DROMOZOA_COMMON_HPP
-
-#include <stddef.h>
-#include <stdio.h>
-
-#include <jpeglib.h>
-
-#include <dromozoa/bind.hpp>
+#include "common.hpp"
 
 namespace dromozoa {
-  void error_exit(const char* what);
-  void error_exit(j_common_ptr cinfo);
+  namespace {
+    class failure : public luaX_failure<> {
+    public:
+      explicit failure(const char* what) : what_(what) {}
 
-  class decompressor_handle_impl;
+      virtual ~failure() throw() {}
 
-  class decompressor_handle {
-  public:
-    static decompressor_handle_impl* create();
-    explicit decompressor_handle(decompressor_handle_impl* impl);
-    ~decompressor_handle();
-    void set_output_message(lua_State* L, int index);
-    void set_fill_input_buffer(lua_State* L, int index);
-  private:
-    scoped_ptr<decompressor_handle_impl> impl_;
-    decompressor_handle(const decompressor_handle&);
-    decompressor_handle& operator=(const decompressor_handle&);
-  };
+      virtual const char* what() const throw() {
+        return what_.c_str();
+      }
+
+    private:
+      std::string what_;
+    };
+  }
+
+  void error_exit(const char* what) {
+    throw failure(what);
+  }
+
+  void error_exit(j_common_ptr cinfo) {
+    char what[JMSG_LENGTH_MAX] = { 0 };
+    (*cinfo->err->format_message)(cinfo, what);
+    throw failure(what);
+  }
 }
-
-#endif
