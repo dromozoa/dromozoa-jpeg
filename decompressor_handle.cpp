@@ -73,6 +73,26 @@ namespace dromozoa {
       return &cinfo_;
     }
 
+    JSAMPARRAY prepare_rows(JDIMENSION height, size_t rowbytes) {
+      size_t storage_size = height * rowbytes;
+      if (row_storage_.size() != storage_size || row_pointers_.size() != height) {
+        std::vector<JSAMPLE> row_storage(storage_size);
+        std::vector<JSAMPROW> row_pointers(height);
+        row_storage.swap(row_storage_);
+        row_pointers.swap(row_pointers_);
+        if (storage_size > 0) {
+          for (size_t y = 0; y < row_pointers_.size(); ++y) {
+            row_pointers_[y] = &row_storage_[y * rowbytes];
+          }
+        }
+      }
+      if (storage_size > 0) {
+        return &row_pointers_[0];
+      } else {
+        return 0;
+      }
+    }
+
   private:
     jpeg_decompress_struct cinfo_;
     jpeg_error_mgr err_;
@@ -81,6 +101,8 @@ namespace dromozoa {
     luaX_reference<> output_message_;
     luaX_reference<> fill_input_buffer_;
     std::vector<JOCTET> buffer_;
+    std::vector<JSAMPLE> row_storage_;
+    std::vector<JSAMPROW> row_pointers_;
 
     decompressor_handle_impl(const decompressor_handle_impl&);
     decompressor_handle_impl& operator=(const decompressor_handle_impl&);
@@ -172,5 +194,9 @@ namespace dromozoa {
 
   j_decompress_ptr decompressor_handle::get() {
     return impl_->get();
+  }
+
+  JSAMPARRAY decompressor_handle::prepare_rows(JDIMENSION height, size_t rowbytes) {
+    return impl_->prepare_rows(height, rowbytes);
   }
 }

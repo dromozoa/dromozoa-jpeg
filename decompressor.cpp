@@ -61,6 +61,20 @@ namespace dromozoa {
       luaX_push(L, static_cast<bool>(result));
     }
 
+    void impl_read_scanlines(lua_State* L) {
+      decompressor_handle* self = check_decompressor_handle(L, 1);
+      JDIMENSION height = self->get()->output_height;
+      if (JSAMPARRAY scanlines = self->prepare_rows(height, self->get()->output_width * self->get()->output_components)) {
+        JDIMENSION result = jpeg_read_scanlines(self->get(), scanlines, height);
+        luaX_push(L, result);
+      }
+    }
+
+    void impl_finish_decompress(lua_State* L) {
+      boolean result = jpeg_finish_decompress(check_decompressor(L, 1));
+      luaX_push(L, static_cast<bool>(result));
+    }
+
     void impl_get_output_width(lua_State* L) {
       luaX_push(L, check_decompressor(L, 1)->output_width);
     }
@@ -80,6 +94,10 @@ namespace dromozoa {
     void impl_get_output_components(lua_State* L) {
       luaX_push(L, check_decompressor(L, 1)->output_components);
     }
+
+    void impl_get_output_scanline(lua_State* L) {
+      luaX_push(L, check_decompressor(L, 1)->output_scanline);
+    }
   }
 
   void initialize_decompressor(lua_State* L) {
@@ -97,11 +115,14 @@ namespace dromozoa {
       luaX_set_field(L, -1, "set_fill_input_buffer", impl_set_fill_input_buffer);
       luaX_set_field(L, -1, "read_header", impl_read_header);
       luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
+      luaX_set_field(L, -1, "read_scanlines", impl_read_scanlines);
+      luaX_set_field(L, -1, "finish_decompress", impl_finish_decompress);
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);
       luaX_set_field(L, -1, "get_output_height", impl_get_output_height);
       luaX_set_field(L, -1, "get_out_color_space", impl_get_out_color_space);
       luaX_set_field(L, -1, "get_out_color_components", impl_get_out_color_components);
       luaX_set_field(L, -1, "get_output_components", impl_get_output_components);
+      luaX_set_field(L, -1, "get_output_scanline", impl_get_output_scanline);
     }
     luaX_set_field(L, -2, "decompressor");
 
