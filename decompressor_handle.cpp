@@ -131,14 +131,13 @@ namespace dromozoa {
         fill_input_buffer_.get_field(L);
         luaX_push(L, buffer_.size());
         if (lua_pcall(L, 1, 1, 0) == 0) {
-          size_t bytes = 0;
-          if (const char* ptr = lua_tolstring(L, -1, &bytes)) {
-            if (buffer_.size() < bytes) {
-              buffer_.resize(bytes);
+          if (luaX_string_reference source = luaX_to_string(L, -1)) {
+            if (buffer_.size() < source.size()) {
+              buffer_.resize(source.size());
             }
-            memcpy(&buffer_[0], ptr, bytes);
+            memcpy(&buffer_[0], source.data(), source.size());
             src_.next_input_byte = &buffer_[0];
-            src_.bytes_in_buffer = bytes;
+            src_.bytes_in_buffer = source.size();
             return TRUE;
           } else {
             return FALSE;
