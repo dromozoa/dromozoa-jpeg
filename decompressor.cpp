@@ -56,7 +56,7 @@ namespace dromozoa {
 
     void impl_read_header(lua_State* L) {
       boolean require_image = TRUE;
-      if (lua_isboolean(L, 2) && !lua_toboolean(L, 2)) {
+      if (luaX_is_false(L, 2)) {
         require_image = FALSE;
       }
       luaX_push(L, jpeg_read_header(check_decompressor(L, 1), require_image));
@@ -103,7 +103,7 @@ namespace dromozoa {
       }
       JDIMENSION result = jpeg_read_scanlines(self->get(), &scanlines[0], max_lines);
       for (JDIMENSION i = 0; i < result; ++i) {
-        lua_pushlstring(L, reinterpret_cast<const char*>(scanlines[i]), samples_per_row);
+        luaX_push(L, luaX_string_reference(reinterpret_cast<const char*>(scanlines[i]), samples_per_row));
       }
     }
 

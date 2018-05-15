@@ -96,7 +96,7 @@ namespace dromozoa {
     void impl_set_quality(lua_State* L) {
       int quality = luaX_check_integer(L, 2, 0, 100);
       boolean force_baseline = TRUE;
-      if (lua_isboolean(L, 3) && !lua_toboolean(L, 3)) {
+      if (luaX_is_false(L, 3)) {
         force_baseline = FALSE;
       }
       jpeg_set_quality(check_compressor(L, 1), quality, force_baseline);
@@ -104,7 +104,11 @@ namespace dromozoa {
     }
 
     void impl_start_compress(lua_State* L) {
-      jpeg_start_compress(check_compressor(L, 1), TRUE);
+      boolean write_all_tables = TRUE;
+      if (luaX_is_false(L, 2)) {
+        write_all_tables = FALSE;
+      }
+      jpeg_start_compress(check_compressor(L, 1), write_all_tables);
       luaX_push_success(L);
     }
 
@@ -120,9 +124,8 @@ namespace dromozoa {
       std::vector<JSAMPROW> scanlines(num_lines);
       for (JDIMENSION i = 0; i < num_lines; ++i) {
         scanlines[i] = &storage[i * samples_per_row];
-        size_t length = 0;
-        if (const char* ptr = lua_tolstring(L, i + 2, &length)) {
-          memcpy(scanlines[i], ptr, std::min(samples_per_row, length));
+        if (luaX_string_reference source = luaX_to_string(L, i + 2)) {
+          memcpy(scanlines[i], source.data(), std::min(samples_per_row, source.size()));
         }
       }
       luaX_push(L, jpeg_write_scanlines(self->get(), &scanlines[0], num_lines));
