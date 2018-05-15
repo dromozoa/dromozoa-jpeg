@@ -1,8 +1,8 @@
 package = "dromozoa-jpeg"
-version = "1.1-1"
+version = "1.2-1"
 source = {
-  url = "https://github.com/dromozoa/dromozoa-jpeg/archive/v1.1.tar.gz";
-  file = "dromozoa-jpeg-1.1.tar.gz";
+  url = "https://github.com/dromozoa/dromozoa-jpeg/archive/v1.2.tar.gz";
+  file = "dromozoa-jpeg-1.2.tar.gz";
 }
 description = {
   summary = "Lua bindings for libjpeg";
