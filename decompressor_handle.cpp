@@ -72,6 +72,13 @@ namespace dromozoa {
       return &cinfo_;
     }
 
+    j_decompress_ptr check_src() {
+      if (!cinfo_.src) {
+        error_exit("src not prepared");
+      }
+      return &cinfo_;
+    }
+
   private:
     jpeg_decompress_struct cinfo_;
     jpeg_error_mgr err_;
@@ -172,5 +179,9 @@ namespace dromozoa {
 
   j_decompress_ptr decompressor_handle::get() {
     return impl_->get();
+  }
+
+  j_decompress_ptr decompressor_handle::check_src() {
+    return impl_->check_src();
   }
 }

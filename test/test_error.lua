@@ -50,3 +50,12 @@ assert(compressor:write_scanlines("\0\0\0"))
 assert(compressor:write_scanlines("\0\0\0"))
 assert(compressor:finish_compress())
 assert(warning == 1)
+
+local compressor = assert(jpeg.compressor())
+local result, message = compressor:start_compress()
+if verbose then
+  io.stderr:write(message, "\n")
+end
+assert(not result)
+
+

@@ -103,24 +103,24 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_get_next_scanline(lua_State* L) {
+      luaX_push(L, check_compressor(L, 1)->next_scanline + 1);
+    }
+
     void impl_start_compress(lua_State* L) {
       boolean write_all_tables = TRUE;
       if (luaX_is_false(L, 2)) {
         write_all_tables = FALSE;
       }
-      jpeg_start_compress(check_compressor(L, 1), write_all_tables);
+      jpeg_start_compress(check_compressor_handle(L, 1)->check_dest(), write_all_tables);
       luaX_push_success(L);
     }
 
     void impl_write_marker(lua_State* L) {
       int marker = luaX_check_integer<int>(L, 2);
       luaX_string_reference source = luaX_check_string(L, 3);
-      jpeg_write_marker(check_compressor(L, 1), marker, reinterpret_cast<const JOCTET*>(source.data()), source.size());
+      jpeg_write_marker(check_compressor_handle(L, 1)->check_dest(), marker, reinterpret_cast<const JOCTET*>(source.data()), source.size());
       luaX_push_success(L);
-    }
-
-    void impl_get_next_scanline(lua_State* L) {
-      luaX_push(L, check_compressor(L, 1)->next_scanline + 1);
     }
 
     void impl_write_scanlines(lua_State* L) {
@@ -135,11 +135,11 @@ namespace dromozoa {
           memcpy(scanlines[i], source.data(), std::min(samples_per_row, source.size()));
         }
       }
-      luaX_push(L, jpeg_write_scanlines(self->get(), &scanlines[0], num_lines));
+      luaX_push(L, jpeg_write_scanlines(self->check_dest(), &scanlines[0], num_lines));
     }
 
     void impl_finish_compress(lua_State* L) {
-      jpeg_finish_compress(check_compressor(L, 1));
+      jpeg_finish_compress(check_compressor_handle(L, 1)->check_dest());
       luaX_push_success(L);
     }
   }
@@ -165,9 +165,9 @@ namespace dromozoa {
       luaX_set_field(L, -1, "set_colorspace", impl_set_colorspace);
       luaX_set_field(L, -1, "default_colorspace", impl_default_colorspace);
       luaX_set_field(L, -1, "set_quality", impl_set_quality);
+      luaX_set_field(L, -1, "get_next_scanline", impl_get_next_scanline);
       luaX_set_field(L, -1, "start_compress", impl_start_compress);
       luaX_set_field(L, -1, "write_marker", impl_write_marker);
-      luaX_set_field(L, -1, "get_next_scanline", impl_get_next_scanline);
       luaX_set_field(L, -1, "write_scanlines", impl_write_scanlines);
       luaX_set_field(L, -1, "finish_compress", impl_finish_compress);
     }

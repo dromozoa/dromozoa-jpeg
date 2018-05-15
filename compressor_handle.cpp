@@ -68,6 +68,13 @@ namespace dromozoa {
       return &cinfo_;
     }
 
+    j_compress_ptr check_dest() {
+      if (!cinfo_.dest) {
+        error_exit("dest not prepared");
+      }
+      return &cinfo_;
+    }
+
   private:
     jpeg_compress_struct cinfo_;
     jpeg_error_mgr err_;
@@ -177,5 +184,9 @@ namespace dromozoa {
 
   j_compress_ptr compressor_handle::get() {
     return impl_->get();
+  }
+
+  j_compress_ptr compressor_handle::check_dest() {
+    return impl_->check_dest();
   }
 }
