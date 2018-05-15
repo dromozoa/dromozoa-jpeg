@@ -112,6 +112,13 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_write_marker(lua_State* L) {
+      int marker = luaX_check_integer<int>(L, 2);
+      luaX_string_reference source = luaX_check_string(L, 3);
+      jpeg_write_marker(check_compressor(L, 1), marker, reinterpret_cast<const JOCTET*>(source.data()), source.size());
+      luaX_push_success(L);
+    }
+
     void impl_get_next_scanline(lua_State* L) {
       luaX_push(L, check_compressor(L, 1)->next_scanline + 1);
     }
@@ -159,6 +166,7 @@ namespace dromozoa {
       luaX_set_field(L, -1, "default_colorspace", impl_default_colorspace);
       luaX_set_field(L, -1, "set_quality", impl_set_quality);
       luaX_set_field(L, -1, "start_compress", impl_start_compress);
+      luaX_set_field(L, -1, "write_marker", impl_write_marker);
       luaX_set_field(L, -1, "get_next_scanline", impl_get_next_scanline);
       luaX_set_field(L, -1, "write_scanlines", impl_write_scanlines);
       luaX_set_field(L, -1, "finish_compress", impl_finish_compress);

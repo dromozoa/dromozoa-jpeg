@@ -39,6 +39,7 @@ assert(compressor:set_in_color_space(jpeg.JCS_RGB))
 assert(compressor:set_defaults())
 
 assert(compressor:start_compress())
+assert(compressor:write_marker(jpeg.JPEG_COM, "comment"))
 for y = 1, height do
   local row = {}
   for x = 1, width do
