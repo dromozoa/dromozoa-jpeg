@@ -29,5 +29,10 @@ namespace dromozoa {
     luaX_set_field(L, -1, "JPEG_SUSPENDED", JPEG_SUSPENDED);
     luaX_set_field(L, -1, "JPEG_HEADER_OK", JPEG_HEADER_OK);
     luaX_set_field(L, -1, "JPEG_HEADER_TABLES_ONLY", JPEG_HEADER_TABLES_ONLY);
+
+    luaX_set_field(L, -1, "JPEG_RST0", JPEG_RST0);
+    luaX_set_field(L, -1, "JPEG_EOI", JPEG_EOI);
+    luaX_set_field(L, -1, "JPEG_APP0", JPEG_APP0);
+    luaX_set_field(L, -1, "JPEG_COM", JPEG_COM);
   }
 }

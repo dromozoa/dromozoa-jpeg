@@ -54,12 +54,31 @@ namespace dromozoa {
       luaX_push_success(L);
     }
 
+    void impl_save_markers(lua_State* L) {
+      int marker = luaX_check_integer<int>(L, 2);
+      unsigned int length_limit = luaX_opt_integer<unsigned int>(L, 3, 0xFFFF);
+      jpeg_save_markers(check_decompressor(L, 1), marker, length_limit);
+      luaX_push_success(L);
+    }
+
     void impl_read_header(lua_State* L) {
       boolean require_image = TRUE;
       if (luaX_is_false(L, 2)) {
         require_image = FALSE;
       }
       luaX_push(L, jpeg_read_header(check_decompressor(L, 1), require_image));
+    }
+
+    void impl_get_marker_list(lua_State* L) {
+      jpeg_saved_marker_ptr marker = check_decompressor(L, 1)->marker_list;
+      lua_newtable(L);
+      for (int i = 1; marker; marker = marker->next, ++i) {
+        lua_newtable(L);
+        luaX_set_field(L, -1, "marker", marker->marker);
+        luaX_set_field(L, -1, "original_length", marker->original_length);
+        luaX_set_field(L, -1, "data", luaX_string_reference(reinterpret_cast<const char*>(marker->data), marker->data_length));
+        luaX_set_field(L, -2, i);
+      }
     }
 
     void impl_set_out_color_space(lua_State* L) {
@@ -125,7 +144,9 @@ namespace dromozoa {
       luaX_set_field(L, -1, "destroy", impl_destroy);
       luaX_set_field(L, -1, "set_output_message", impl_set_output_message);
       luaX_set_field(L, -1, "set_fill_input_buffer", impl_set_fill_input_buffer);
+      luaX_set_field(L, -1, "save_markers", impl_save_markers);
       luaX_set_field(L, -1, "read_header", impl_read_header);
+      luaX_set_field(L, -1, "get_marker_list", impl_get_marker_list);
       luaX_set_field(L, -1, "set_out_color_space", impl_set_out_color_space);
       luaX_set_field(L, -1, "start_decompress", impl_start_decompress);
       luaX_set_field(L, -1, "get_output_width", impl_get_output_width);

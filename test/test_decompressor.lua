@@ -30,7 +30,9 @@ assert(decompressor:set_fill_input_buffer(function (n)
   return data
 end))
 
+assert(decompressor:save_markers(jpeg.JPEG_APP0 + 1))
 assert(decompressor:read_header() == jpeg.JPEG_HEADER_OK)
+assert(#decompressor:get_marker_list() == 0)
 assert(decompressor:set_out_color_space(jpeg.JCS_GRAYSCALE))
 assert(decompressor:start_decompress())
 assert(decompressor:get_output_width() == 1084)
