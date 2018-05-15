@@ -25,6 +25,6 @@ namespace dromozoa {
   void error_exit(j_common_ptr cinfo) {
     char what[JMSG_LENGTH_MAX] = { 0 };
     (*cinfo->err->format_message)(cinfo, what);
-    luaX_throw_failure(what);
+    luaX_throw_failure(what, cinfo->err->msg_code);
   }
 }
