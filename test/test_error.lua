@@ -23,11 +23,12 @@ local decompressor = assert(jpeg.decompressor())
 assert(decompressor:set_fill_input_buffer(function (n)
   return "\0\0"
 end))
-local result, message = decompressor:read_header()
+local result, message, code = decompressor:read_header()
 if verbose then
-  io.stderr:write(message, "\n")
+  io.stderr:write(message, "\t", code, "\n")
 end
 assert(not result)
+assert(code)
 
 local warning = 0
 local compressor = assert(jpeg.compressor())
@@ -49,3 +50,12 @@ assert(compressor:write_scanlines("\0\0\0"))
 assert(compressor:write_scanlines("\0\0\0"))
 assert(compressor:finish_compress())
 assert(warning == 1)
+
+local compressor = assert(jpeg.compressor())
+local result, message = compressor:start_compress()
+if verbose then
+  io.stderr:write(message, "\n")
+end
+assert(not result)
+
+
