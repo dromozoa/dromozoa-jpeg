@@ -18,29 +18,13 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  namespace {
-    class failure : public luaX_failure<> {
-    public:
-      explicit failure(const char* what) : what_(what) {}
-
-      virtual ~failure() throw() {}
-
-      virtual const char* what() const throw() {
-        return what_.c_str();
-      }
-
-    private:
-      std::string what_;
-    };
-  }
-
   void error_exit(const char* what) {
-    throw failure(what);
+    luaX_throw_failure(what);
   }
 
   void error_exit(j_common_ptr cinfo) {
     char what[JMSG_LENGTH_MAX] = { 0 };
     (*cinfo->err->format_message)(cinfo, what);
-    throw failure(what);
+    luaX_throw_failure(what);
   }
 }
