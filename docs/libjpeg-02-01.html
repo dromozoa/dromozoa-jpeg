@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>OVERVIEW / Functions provided by the library</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>OVERVIEW</h1>
+
+<h2>Functions provided by the library</h2>
+
+<pre>
+The IJG JPEG library provides C code to read and write JPEG-compressed image
+files.  The surrounding application program receives or supplies image data a
+scanline at a time, using a straightforward uncompressed image format.  All
+details of color conversion and other preprocessing/postprocessing can be
+handled by the library.
+
+The library includes a substantial amount of code that is not covered by the
+JPEG standard but is necessary for typical applications of JPEG.  These
+functions preprocess the image before JPEG compression or postprocess it after
+decompression.  They include colorspace conversion, downsampling/upsampling,
+and color quantization.  The application indirectly selects use of this code
+by specifying the format in which it wishes to supply or receive image data.
+For example, if colormapped output is requested, then the decompression
+library automatically invokes color quantization.
+
+A wide range of quality vs. speed tradeoffs are possible in JPEG processing,
+and even more so in decompression postprocessing.  The decompression library
+provides multiple implementations that cover most of the useful tradeoffs,
+ranging from very-high-quality down to fast-preview operation.  On the
+compression side we have generally not provided low-quality choices, since
+compression is normally less time-critical.  It should be understood that the
+low-quality modes may not meet the JPEG standard's accuracy requirements;
+nonetheless, they are useful for viewers.
+
+A word about functions *not* provided by the library.  We handle a subset of
+the ISO JPEG standard; most baseline, extended-sequential, and progressive
+JPEG processes are supported.  (Our subset includes all features now in common
+use.)  Unsupported ISO options include:
+	* Hierarchical storage
+	* Lossless JPEG
+	* DNL marker
+	* Nonintegral subsampling ratios
+We support 8-bit to 12-bit data precision, but this is a compile-time choice
+rather than a run-time choice; hence it is difficult to use different
+precisions in a single application.
+
+By itself, the library handles only interchange JPEG datastreams --- in
+particular the widely used JFIF file format.  The library can be used by
+surrounding code to process interchange or abbreviated JPEG datastreams that
+are embedded in more complex file formats.  (For example, this library is
+used by the free LIBTIFF library to support JPEG compression in TIFF.)
+</pre>
+</div>
+</body>
+</html>

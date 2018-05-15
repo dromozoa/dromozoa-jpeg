@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>ADVANCED FEATURES / Really raw data: DCT coefficients</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>ADVANCED FEATURES</h1>
+
+<h2>Really raw data: DCT coefficients</h2>
+
+<pre>
+It is possible to read or write the contents of a JPEG file as raw DCT
+coefficients.  This facility is mainly intended for use in lossless
+transcoding between different JPEG file formats.  Other possible applications
+include lossless cropping of a JPEG image, lossless reassembly of a
+multi-strip or multi-tile TIFF/JPEG file into a single JPEG datastream, etc.
+
+To read the contents of a JPEG file as DCT coefficients, open the file and do
+<a href="jpeglib.h.html#L1039">jpeg_read_header</a>() as usual.  But instead of calling <a href="jpeglib.h.html#L1052">jpeg_start_decompress</a>()
+and <a href="jpeglib.h.html#L1053">jpeg_read_scanlines</a>(), call <a href="jpeglib.h.html#L1093">jpeg_read_coefficients</a>().  This will read the
+entire image into a set of virtual coefficient-block arrays, one array per
+component.  The return value is a pointer to an array of virtual-array
+descriptors.  Each virtual array can be accessed directly using the JPEG
+memory manager's access_virt_barray method (see Memory management, below,
+and also read structure.txt's discussion of virtual array handling).  Or,
+for simple transcoding to a different JPEG file format, the array list can
+just be handed directly to <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>().
+
+Each block in the block arrays contains quantized coefficient values in
+normal array order (not JPEG zigzag order).  The block arrays contain only
+DCT blocks containing real data; any entirely-dummy blocks added to fill out
+interleaved MCUs at the right or bottom edges of the image are discarded
+during reading and are not stored in the block arrays.  (The size of each
+block array can be determined from the width_in_blocks and height_in_blocks
+fields of the component's comp_info entry.)  This is also the data format
+expected by <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>().
+
+When you are done using the virtual arrays, call <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>()
+to release the array storage and return the decompression object to an idle
+state; or just call <a href="jpeglib.h.html#L1112">jpeg_destroy</a>() if you don't need to reuse the object.
+
+If you use a suspending data source, <a href="jpeglib.h.html#L1093">jpeg_read_coefficients</a>() will return
+NULL if it is forced to suspend; a non-NULL return value indicates successful
+completion.  You need not test for a NULL return value when using a
+non-suspending data source.
+
+It is also possible to call <a href="jpeglib.h.html#L1093">jpeg_read_coefficients</a>() to obtain access to the
+decoder's coefficient arrays during a normal decode cycle in buffered-image
+mode.  This frammish might be useful for progressively displaying an incoming
+image and then re-encoding it without loss.  To do this, decode in buffered-
+image mode as discussed previously, then call <a href="jpeglib.h.html#L1093">jpeg_read_coefficients</a>() after
+the last <a href="jpeglib.h.html#L1067">jpeg_finish_output</a>() call.  The arrays will be available for your use
+until you call <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>().
+
+
+To write the contents of a JPEG file as DCT coefficients, you must provide
+the DCT coefficients stored in virtual block arrays.  You can either pass
+block arrays read from an input JPEG file by <a href="jpeglib.h.html#L1093">jpeg_read_coefficients</a>(), or
+allocate virtual arrays from the JPEG compression object and fill them
+yourself.  In either case, <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() is substituted for
+<a href="jpeglib.h.html#L1010">jpeg_start_compress</a>() and <a href="jpeglib.h.html#L1012">jpeg_write_scanlines</a>().  Thus the sequence is
+  * Create compression object
+  * Set all compression parameters as necessary
+  * Request virtual arrays if needed
+  * <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>()
+  * <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>()
+  * Destroy or re-use compression object
+<a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() is passed a pointer to an array of virtual block
+array descriptors; the number of arrays is equal to cinfo.num_components.
+
+The virtual arrays need only have been requested, not realized, before
+<a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() is called.  A side-effect of
+<a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() is to realize any virtual arrays that have been
+requested from the compression object's memory manager.  Thus, when obtaining
+the virtual arrays from the compression object, you should fill the arrays
+after calling <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>().  The data is actually written out
+when you call <a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>(); <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() only writes
+the file header.
+
+When writing raw DCT coefficients, it is crucial that the JPEG quantization
+tables and sampling factors match the way the data was encoded, or the
+resulting file will be invalid.  For transcoding from an existing JPEG file,
+we recommend using <a href="jpeglib.h.html#L1096">jpeg_copy_critical_parameters</a>().  This routine initializes
+all the compression parameters to default values (like <a href="jpeglib.h.html#L986">jpeg_set_defaults</a>()),
+then copies the critical information from a source decompression object.
+The decompression object should have just been used to read the entire
+JPEG input file --- that is, it should be awaiting <a href="jpeglib.h.html#L1056">jpeg_finish_decompress</a>().
+
+<a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() marks all tables stored in the compression object
+as needing to be written to the output file (thus, it acts like
+<a href="jpeglib.h.html#L1010">jpeg_start_compress</a>(cinfo, TRUE)).  This is for safety's sake, to avoid
+emitting abbreviated JPEG files by accident.  If you really want to emit an
+abbreviated JPEG file, call <a href="jpeglib.h.html#L1004">jpeg_suppress_tables</a>(), or set the tables'
+individual sent_table flags, between calling <a href="jpeglib.h.html#L1094">jpeg_write_coefficients</a>() and
+<a href="jpeglib.h.html#L1015">jpeg_finish_compress</a>().
+</pre>
+</div>
+</body>
+</html>

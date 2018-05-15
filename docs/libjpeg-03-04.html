@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>BASIC LIBRARY USAGE / Mechanics of usage: include files, linking, etc</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="markdown-body">
+
+<h1>BASIC LIBRARY USAGE</h1>
+
+<h2>Mechanics of usage: include files, linking, etc</h2>
+
+<pre>
+Applications using the JPEG library should include the header file jpeglib.h
+to obtain declarations of data types and routines.  Before including
+jpeglib.h, include system headers that define at least the typedefs FILE and
+size_t.  On ANSI-conforming systems, including &lt;stdio.h&gt; is sufficient; on
+older Unix systems, you may need &lt;sys/types.h&gt; to define size_t.
+
+If the application needs to refer to individual JPEG library error codes, also
+include jerror.h to define those symbols.
+
+jpeglib.h indirectly includes the files jconfig.h and jmorecfg.h.  If you are
+installing the JPEG header files in a system directory, you will want to
+install all four files: jpeglib.h, jerror.h, jconfig.h, jmorecfg.h.
+
+The most convenient way to include the JPEG code into your executable program
+is to prepare a library file ("libjpeg.a", or a corresponding name on non-Unix
+machines) and reference it at your link step.  If you use only half of the
+library (only compression or only decompression), only that much code will be
+included from the library, unless your linker is hopelessly brain-damaged.
+The supplied makefiles build libjpeg.a automatically (see install.txt).
+
+While you can build the JPEG library as a shared library if the whim strikes
+you, we don't really recommend it.  The trouble with shared libraries is that
+at some point you'll probably try to substitute a new version of the library
+without recompiling the calling applications.  That generally doesn't work
+because the parameter struct declarations usually change with each new
+version.  In other words, the library's API is *not* guaranteed binary
+compatible across versions; we only try to ensure source-code compatibility.
+(In hindsight, it might have been smarter to hide the parameter structs from
+applications and introduce a ton of access functions instead.  Too late now,
+however.)
+
+On some systems your application may need to set up a signal handler to ensure
+that temporary files are deleted if the program is interrupted.  This is most
+critical if you are on MS-DOS and use the jmemdos.c memory manager back end;
+it will try to grab extended memory for temp files, and that space will NOT be
+freed automatically.  See cjpeg.c or djpeg.c for an example signal handler.
+
+It may be worth pointing out that the core JPEG library does not actually
+require the stdio library: only the default source/destination managers and
+error handler need it.  You can use the library in a stdio-less environment
+if you replace those modules and use jmemnobs.c (or another memory manager of
+your own devising).  More info about the minimum system library requirements
+may be found in jinclude.h.
+</pre>
+</div>
+</body>
+</html>
