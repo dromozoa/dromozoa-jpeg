@@ -33,6 +33,20 @@ namespace dromozoa {
     luaX_set_field(L, -1, "JPEG_RST0", JPEG_RST0);
     luaX_set_field(L, -1, "JPEG_EOI", JPEG_EOI);
     luaX_set_field(L, -1, "JPEG_APP0", JPEG_APP0);
+    luaX_set_field(L, -1, "JPEG_APP1", JPEG_APP0 + 1);
+    luaX_set_field(L, -1, "JPEG_APP2", JPEG_APP0 + 2);
+    luaX_set_field(L, -1, "JPEG_APP3", JPEG_APP0 + 3);
+    luaX_set_field(L, -1, "JPEG_APP4", JPEG_APP0 + 4);
+    luaX_set_field(L, -1, "JPEG_APP5", JPEG_APP0 + 5);
+    luaX_set_field(L, -1, "JPEG_APP6", JPEG_APP0 + 6);
+    luaX_set_field(L, -1, "JPEG_APP7", JPEG_APP0 + 7);
+    luaX_set_field(L, -1, "JPEG_APP8", JPEG_APP0 + 8);
+    luaX_set_field(L, -1, "JPEG_APP9", JPEG_APP0 + 9);
+    luaX_set_field(L, -1, "JPEG_APP10", JPEG_APP0 + 10);
+    luaX_set_field(L, -1, "JPEG_APP11", JPEG_APP0 + 11);
+    luaX_set_field(L, -1, "JPEG_APP12", JPEG_APP0 + 12);
+    luaX_set_field(L, -1, "JPEG_APP13", JPEG_APP0 + 13);
+    luaX_set_field(L, -1, "JPEG_APP14", JPEG_APP0 + 14);
     luaX_set_field(L, -1, "JPEG_COM", JPEG_COM);
   }
 }
