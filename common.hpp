@@ -24,6 +24,8 @@
 #include <jpeglib.h>
 #include <jerror.h>
 
+#include <string>
+
 #include <dromozoa/bind.hpp>
 
 #if BITS_IN_JSAMPLE != 8
@@ -31,6 +33,7 @@
 #endif
 
 namespace dromozoa {
+  std::string format_message(j_common_ptr cinfo);
   void error_exit(const char* what);
   void error_exit(j_common_ptr cinfo);
 

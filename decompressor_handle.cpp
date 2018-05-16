@@ -112,9 +112,7 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         output_message_.get_field(L);
-        char what[JMSG_LENGTH_MAX] = { 0 };
-        (*err_.format_message)(reinterpret_cast<j_common_ptr>(&cinfo_), what);
-        luaX_push(L, what);
+        luaX_push(L, format_message(reinterpret_cast<j_common_ptr>(&cinfo_)));
         if (lua_pcall(L, 1, 0, 0) != 0) {
           error_exit(lua_tostring(L, -1));
         }
