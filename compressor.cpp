@@ -68,7 +68,7 @@ namespace dromozoa {
     }
 
     void impl_set_input_components(lua_State* L) {
-      check_compressor(L, 1)->input_components = luaX_check_enum<int>(L, 2);
+      check_compressor(L, 1)->input_components = luaX_check_integer<int>(L, 2, 1, MAX_COMPONENTS);
       luaX_push_success(L);
     }
 
@@ -126,16 +126,18 @@ namespace dromozoa {
     void impl_write_scanlines(lua_State* L) {
       compressor_handle* self = check_compressor_handle(L, 1);
       JDIMENSION num_lines = lua_gettop(L) - 1;
-      size_t samples_per_row = self->get()->image_width * self->get()->input_components;
-      std::vector<JSAMPLE> storage(samples_per_row * num_lines);
-      std::vector<JSAMPROW> scanlines(num_lines);
-      for (JDIMENSION i = 0; i < num_lines; ++i) {
-        scanlines[i] = &storage[i * samples_per_row];
-        if (luaX_string_reference source = luaX_to_string(L, i + 2)) {
-          memcpy(scanlines[i], source.data(), std::min(samples_per_row, source.size()));
+      if (num_lines > 0) {
+        size_t samples_per_row = self->get()->image_width * self->get()->input_components;
+        std::vector<JSAMPLE> storage(samples_per_row * num_lines);
+        std::vector<JSAMPROW> scanlines(num_lines);
+        for (JDIMENSION i = 0; i < num_lines; ++i) {
+          scanlines[i] = &storage[i * samples_per_row];
+          if (luaX_string_reference source = luaX_to_string(L, i + 2)) {
+            memcpy(scanlines[i], source.data(), std::min(samples_per_row, source.size()));
+          }
         }
+        luaX_push(L, jpeg_write_scanlines(self->get(true), &scanlines[0], num_lines));
       }
-      luaX_push(L, jpeg_write_scanlines(self->get(true), &scanlines[0], num_lines));
     }
 
     void impl_finish_compress(lua_State* L) {
