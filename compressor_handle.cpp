@@ -64,13 +64,11 @@ namespace dromozoa {
       }
     }
 
-    j_compress_ptr get() {
-      return &cinfo_;
-    }
-
-    j_compress_ptr check_dest() {
-      if (!cinfo_.dest) {
-        error_exit("dest not prepared");
+    j_compress_ptr get(bool check_dest) {
+      if (check_dest) {
+        if (!cinfo_.dest) {
+          error_exit("dest not prepared");
+        }
       }
       return &cinfo_;
     }
@@ -180,11 +178,7 @@ namespace dromozoa {
     impl_->set_empty_output_buffer(L, index);
   }
 
-  j_compress_ptr compressor_handle::get() {
-    return impl_->get();
-  }
-
-  j_compress_ptr compressor_handle::check_dest() {
-    return impl_->check_dest();
+  j_compress_ptr compressor_handle::get(bool check_dest) {
+    return impl_->get(check_dest);
   }
 }
