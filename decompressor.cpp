@@ -76,7 +76,7 @@ namespace dromozoa {
         lua_newtable(L);
         luaX_set_field(L, -1, "marker", marker->marker);
         luaX_set_field(L, -1, "original_length", marker->original_length);
-        luaX_set_field(L, -1, "data", luaX_string_reference(reinterpret_cast<const char*>(marker->data), marker->data_length));
+        luaX_set_field(L, -1, "data", luaX_string_reference(marker->data, marker->data_length));
         luaX_set_field(L, -2, i);
       }
     }
@@ -122,7 +122,7 @@ namespace dromozoa {
       }
       JDIMENSION result = jpeg_read_scanlines(self->check_src(), &scanlines[0], max_lines);
       for (JDIMENSION i = 0; i < result; ++i) {
-        luaX_push(L, luaX_string_reference(reinterpret_cast<const char*>(scanlines[i]), samples_per_row));
+        luaX_push(L, luaX_string_reference(scanlines[i], samples_per_row));
       }
     }
 

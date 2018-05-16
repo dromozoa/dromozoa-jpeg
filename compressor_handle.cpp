@@ -127,7 +127,7 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         empty_output_buffer_.get_field(L);
-        luaX_push(L, luaX_string_reference(reinterpret_cast<const char*>(&buffer_[0]), buffer_.size()));
+        luaX_push(L, luaX_string_reference(&buffer_[0], buffer_.size()));
         if (lua_pcall(L, 1, 0, 0) == 0) {
           if (luaX_is_false(L, -1)) {
             return FALSE;
@@ -149,7 +149,7 @@ namespace dromozoa {
         luaX_top_saver save_top(L);
         {
           empty_output_buffer_.get_field(L);
-          luaX_push(L, luaX_string_reference(reinterpret_cast<const char*>(&buffer_[0]), buffer_.size() - dest_.free_in_buffer));
+          luaX_push(L, luaX_string_reference(&buffer_[0], buffer_.size() - dest_.free_in_buffer));
           if (lua_pcall(L, 1, 0, 0) == 0) {
             if (luaX_is_false(L, -1)) {
               ERREXIT(&cinfo_, JERR_CANT_SUSPEND);
