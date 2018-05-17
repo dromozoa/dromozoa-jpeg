@@ -19,8 +19,8 @@ local jpeg = require "dromozoa.jpeg"
 
 local verbose = os.getenv "VERBOSE" == "1"
 
-local width = 1084
-local height = 2318
+local width = 600
+local height = 800
 local color_space = jpeg.JCS_RGB
 local color_components = 3
 
@@ -45,7 +45,7 @@ local function compress(rows, quality)
 end
 
 local decompressor = assert(jpeg.decompressor())
-local handle = assert(io.open("docs/l_hires.jpg", "rb"))
+local handle = assert(io.open("docs/test.jpg", "rb"))
 assert(decompressor:set_fill_input_buffer(function (n)
   return handle:read(n)
 end))

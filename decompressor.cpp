@@ -66,7 +66,7 @@ namespace dromozoa {
       if (luaX_is_false(L, 2)) {
         require_image = FALSE;
       }
-      luaX_push(L, jpeg_read_header(check_decompressor_handle(L, 1)->check_src(), require_image));
+      luaX_push(L, jpeg_read_header(check_decompressor_handle(L, 1)->get(true), require_image));
     }
 
     void impl_get_marker_list(lua_State* L) {
@@ -76,7 +76,7 @@ namespace dromozoa {
         lua_newtable(L);
         luaX_set_field(L, -1, "marker", marker->marker);
         luaX_set_field(L, -1, "original_length", marker->original_length);
-        luaX_set_field(L, -1, "data", luaX_string_reference(reinterpret_cast<const char*>(marker->data), marker->data_length));
+        luaX_set_field(L, -1, "data", luaX_string_reference(marker->data, marker->data_length));
         luaX_set_field(L, -2, i);
       }
     }
@@ -87,7 +87,7 @@ namespace dromozoa {
     }
 
     void impl_start_decompress(lua_State* L) {
-      luaX_push<bool>(L, jpeg_start_decompress(check_decompressor_handle(L, 1)->check_src()));
+      luaX_push<bool>(L, jpeg_start_decompress(check_decompressor_handle(L, 1)->get(true)));
     }
 
     void impl_get_output_width(lua_State* L) {
@@ -120,14 +120,14 @@ namespace dromozoa {
       for (JDIMENSION i = 0; i < max_lines; ++i) {
         scanlines[i] = &storage[i * samples_per_row];
       }
-      JDIMENSION result = jpeg_read_scanlines(self->check_src(), &scanlines[0], max_lines);
+      JDIMENSION result = jpeg_read_scanlines(self->get(true), &scanlines[0], max_lines);
       for (JDIMENSION i = 0; i < result; ++i) {
-        luaX_push(L, luaX_string_reference(reinterpret_cast<const char*>(scanlines[i]), samples_per_row));
+        luaX_push(L, luaX_string_reference(scanlines[i], samples_per_row));
       }
     }
 
     void impl_finish_decompress(lua_State* L) {
-      luaX_push<bool>(L, jpeg_finish_decompress(check_decompressor_handle(L, 1)->check_src()));
+      luaX_push<bool>(L, jpeg_finish_decompress(check_decompressor_handle(L, 1)->get(true)));
     }
   }
 

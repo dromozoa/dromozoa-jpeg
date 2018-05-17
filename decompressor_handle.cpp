@@ -68,13 +68,11 @@ namespace dromozoa {
       }
     }
 
-    j_decompress_ptr get() {
-      return &cinfo_;
-    }
-
-    j_decompress_ptr check_src() {
-      if (!cinfo_.src) {
-        error_exit("src not prepared");
+    j_decompress_ptr get(bool check_src) {
+      if (check_src) {
+        if (!cinfo_.src) {
+          error_exit("src not prepared");
+        }
       }
       return &cinfo_;
     }
@@ -112,9 +110,7 @@ namespace dromozoa {
       luaX_top_saver save_top(L);
       {
         output_message_.get_field(L);
-        char what[JMSG_LENGTH_MAX] = { 0 };
-        (*err_.format_message)(reinterpret_cast<j_common_ptr>(&cinfo_), what);
-        luaX_push(L, what);
+        luaX_push(L, format_message(reinterpret_cast<j_common_ptr>(&cinfo_)));
         if (lua_pcall(L, 1, 0, 0) != 0) {
           error_exit(lua_tostring(L, -1));
         }
@@ -177,11 +173,7 @@ namespace dromozoa {
     impl_->set_fill_input_buffer(L, index);
   }
 
-  j_decompress_ptr decompressor_handle::get() {
-    return impl_->get();
-  }
-
-  j_decompress_ptr decompressor_handle::check_src() {
-    return impl_->check_src();
+  j_decompress_ptr decompressor_handle::get(bool check_src) {
+    return impl_->get(check_src);
   }
 }
