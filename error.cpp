@@ -18,13 +18,17 @@
 #include "common.hpp"
 
 namespace dromozoa {
+  std::string format_message(j_common_ptr cinfo) {
+    char message[JMSG_LENGTH_MAX] = { 0 };
+    (*cinfo->err->format_message)(cinfo, message);
+    return message;
+  }
+
   void error_exit(const char* what) {
     luaX_throw_failure(what);
   }
 
   void error_exit(j_common_ptr cinfo) {
-    char what[JMSG_LENGTH_MAX] = { 0 };
-    (*cinfo->err->format_message)(cinfo, what);
-    luaX_throw_failure(what, cinfo->err->msg_code);
+    luaX_throw_failure(format_message(cinfo), cinfo->err->msg_code);
   }
 }

@@ -25,4 +25,4 @@ do
   esac
 done
 
-rm -f test.jpg
+rm -f test.jpg test*.dat
