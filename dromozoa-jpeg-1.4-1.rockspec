@@ -1,8 +1,8 @@
 package = "dromozoa-jpeg"
-version = "1.3-1"
+version = "1.4-1"
 source = {
-  url = "https://github.com/dromozoa/dromozoa-jpeg/archive/v1.3.tar.gz";
-  file = "dromozoa-jpeg-1.3.tar.gz";
+  url = "https://github.com/dromozoa/dromozoa-jpeg/archive/v1.4.tar.gz";
+  file = "dromozoa-jpeg-1.4.tar.gz";
 }
 description = {
   summary = "Lua bindings for libjpeg";
@@ -16,7 +16,6 @@ build = {
     CFLAGS = "$(CFLAGS)";
     LIBFLAG = "$(LIBFLAG)";
     LUA_INCDIR = "$(LUA_INCDIR)";
-    LUA_LIBDIR = "$(LUA_LIBDIR)";
   };
   install_variables = {
     LIBDIR = "$(LIBDIR)";

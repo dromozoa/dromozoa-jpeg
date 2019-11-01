@@ -1,4 +1,4 @@
-// Copyright (C) 2016,2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-bind.
 //
@@ -15,12 +15,37 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-bind.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_BIND_HPP
-#define DROMOZOA_BIND_HPP
+#ifndef DROMOZOA_BIND_ATOMIC_HPP
+#define DROMOZOA_BIND_ATOMIC_HPP
 
-#include "bind/luaX.hpp"
-#include "bind/scoped_ptr.hpp"
-#include "bind/system_error.hpp"
-#include "bind/unexpected.hpp"
+#include "mutex.hpp"
+
+namespace dromozoa {
+  namespace bind {
+    template <class T>
+    class atomic_count {
+    public:
+      atomic_count() : count_() {}
+
+      T operator++() {
+        lock_guard<> lock(mutex_);
+        return ++count_;
+      }
+
+      T operator--() {
+        lock_guard<> lock(mutex_);
+        return --count_;
+      }
+
+    private:
+      mutex mutex_;
+      T count_;
+      atomic_count(const atomic_count&);
+      atomic_count& operator=(const atomic_count&);
+    };
+  }
+
+  using bind::atomic_count;
+}
 
 #endif
